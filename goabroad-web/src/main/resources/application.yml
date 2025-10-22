@@ -1,0 +1,149 @@
+spring:
+  application:
+    name: goabroad-api
+  
+  # 数据源配置
+  datasource:
+    url: jdbc:mysql://localhost:3307/goabroad_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ascrm
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: none # 不自动创建表，需手动执行SQL脚本
+    show-sql: false # 生产环境设置为 false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: false # 关闭懒加载警告
+
+  # Redis 配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      password: ascrm
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+
+  # 缓存配置
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=600s
+  
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+# SpringDoc 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  group-configs:
+    - group: 认证模块
+      paths-to-match: /api/v1/auth/**
+    - group: 用户模块
+      paths-to-match: /api/v1/users/**
+    - group: 国家模块
+      paths-to-match: /api/v1/countries/**
+    - group: 规划模块
+      paths-to-match: /api/v1/plans/**, /api/v1/materials/**
+    - group: 社区模块
+      paths-to-match: /api/v1/posts/**, /api/v1/comments/**
+    - group: 通知模块
+      paths-to-match: /api/v1/notifications/**, /api/v1/reminders/**
+    - group: 文件模块
+      paths-to-match: /api/v1/files/**
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+# 日志配置
+logging:
+  level:
+    root: INFO                    # 全局DEBUG级别
+    # com.goabroad: DEBUG           # 你的项目DEBUG级别
+    # org.springframework.web: INFO # Spring Web保持INFO，避免过多日志
+    # org.springframework: WARN     # Spring框架只显示WARN及以上
+    # org.hibernate.SQL: DEBUG      # 显示SQL语句
+    # org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # 显示SQL参数绑定
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
+  file:
+    name: logs/goabroad.log
+    max-size: 10MB
+    max-history: 30
+
+# 存储配置
+storage:
+  type: local # local/aliyun/qiniu
+  local:
+    path: D:/upload/goabroad # Windows 路径，Linux 改为 /var/upload/goabroad
+    base-url: http://localhost:8080/upload
+  max-file-size: 10485760 # 10MB
+  allowed-types:
+    image: jpg,jpeg,png,gif,webp
+    document: pdf,doc,docx
+
+# Sa-Token 配置
+sa-token:
+  # Token 名称（同时也是 Cookie 名称）
+  token-name: Authorization
+  # Token 有效期（单位：秒）默认30天，-1 代表永久有效
+  timeout: 2592000
+  # Token 最低活跃频率（单位：秒），如果 Token 超过此时间没有访问系统就会被冻结，默认-1 代表不限制，永不冻结
+  active-timeout: -1
+  # 是否允许同一账号并发登录（为 true 时允许一起登录, 为 false 时新登录挤掉旧登录）
+  is-concurrent: true
+  # 在多人登录同一账号时，是否共用一个 Token（为 true 时所有登录共用一个 Token, 为 false 时每次登录新建一个 Token）
+  is-share: false
+  # Token 风格（默认可取值：uuid、simple-uuid、random-32、random-64、random-128、tik）
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: true
+  # 是否尝试从请求体里读取 Token
+  is-read-body: true
+  # 是否尝试从 Header 里读取 Token
+  is-read-header: true
+  # 是否尝试从 Cookie 里读取 Token
+  is-read-cookie: false
+  # JWT 秘钥（用于 JWT 模式）
+  jwt-secret-key: goabroad-jwt-secret-key-2024-very-long-and-secure-key-for-production

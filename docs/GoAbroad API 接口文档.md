@@ -1,16 +1,10 @@
-我来根据前端代码情况帮你生成完整的后端API接口文档。让我先查看一些关键的前端API调用和状态管理代码。
-
-[11 tools called]
-
-完美！现在我已经分析了所有前端代码，接下来为你生成一份完整的后端API接口文档。
-
----
-
 # 📘 GoAbroad 后端 API 接口文档
 
-**版本**: v1.0  
-**基础URL**: `https://api.goabroad.com/api/v1`  
-**文档生成日期**: 2024-10-25
+---
+**版本**: v0.1.0  
+**基础URL**: `http://localhost:8080/api`  
+**文档生成日期**: 2024-10-25  
+**当前状态**: 开发中（仅实现部分认证接口）
 
 ## 📑 目录
 
@@ -34,40 +28,59 @@
 ```http
 Content-Type: application/json
 Accept: application/json
-Authorization: Bearer {access_token}  # 需要认证的接口
-X-App-Version: 1.0.0                  # 客户端版本
-X-Platform: ios/android               # 平台类型
+satoken: {token_value}                # 需要认证的接口（Sa-Token认证）
+X-App-Version: 1.0.0                  # 客户端版本（可选）
+X-Platform: web/ios/android           # 平台类型（可选）
 ```
 
+**认证说明**:
+- 本项目使用 Sa-Token 作为认证框架
+- Token默认存储在请求头的 `satoken` 字段中
+- Token有效期默认为30天（2592000秒）
+- 登录/注册成功后会返回token，需要在后续需要认证的接口中携带
+
 ### 统一响应格式
+
+**说明**: 所有接口返回统一的Result对象，包含以下字段：
 
 #### 成功响应
 
 ```json
 {
   "code": 200,
-  "message": "Success",
-  "data": { /* 具体数据 */ },
+  "message": "操作成功",
+  "data": { /* 具体数据，可能为null */ },
   "timestamp": 1698345600000
 }
 ```
+
+**字段说明**:
+- `code`: 状态码（200表示成功）
+- `message`: 响应消息
+- `data`: 响应数据（泛型，根据接口不同而不同）
+- `timestamp`: 响应时间戳（毫秒）
 
 #### 失败响应
 
 ```json
 {
-  "code": 400,
-  "message": "Error message",
-  "error": "ERROR_CODE",
-  "details": { /* 详细错误信息 */ },
+  "code": 40001,
+  "message": "该手机号已被注册",
+  "data": null,
   "timestamp": 1698345600000
 }
 ```
 
+**字段说明**:
+- `code`: 错误码（详见错误码说明章节）
+- `message`: 错误描述信息
+- `data`: 通常为null
+- `timestamp`: 响应时间戳（毫秒）
+
 ### 分页参数规范
 
 ```
-page: 页码，从 1 开始
+page: 页码，从 1 开始（默认1）
 pageSize: 每页数量，默认 20，最大 100
 ```
 
@@ -76,19 +89,35 @@ pageSize: 每页数量，默认 20，最大 100
 ```json
 {
   "code": 200,
-  "message": "Success",
+  "message": "操作成功",
   "data": {
     "items": [ /* 数据列表 */ ],
     "pagination": {
-      "page": 1,
+      "currentPage": 1,
       "pageSize": 20,
-      "total": 100,
+      "totalItems": 100,
       "totalPages": 5,
-      "hasMore": true
+      "hasNext": true,
+      "hasPrevious": false,
+      "isFirstPage": true,
+      "isLastPage": false
     }
-  }
+  },
+  "timestamp": 1698345600000
 }
 ```
+
+**分页字段说明**:
+- `items`: 当前页的数据列表
+- `pagination`: 分页信息对象
+  - `currentPage`: 当前页码
+  - `pageSize`: 每页大小
+  - `totalItems`: 总记录数
+  - `totalPages`: 总页数
+  - `hasNext`: 是否有下一页
+  - `hasPrevious`: 是否有上一页
+  - `isFirstPage`: 是否是第一页
+  - `isLastPage`: 是否是最后一页
 
 ---
 
@@ -96,22 +125,24 @@ pageSize: 每页数量，默认 20，最大 100
 
 ### 1.1 用户注册
 
-**接口**: `POST /auth/register`  
-**说明**: 用户邮箱注册  
+**接口**: `POST /api/auth/register`  
+**说明**: 手机号短信验证码注册  
 **需要认证**: 否
 
 #### 请求参数
 
 ```json
 {
-  "email": "user@example.com",
-  "password": "Password123!",
-  "name": "张三",
-  "phone": "13800138000",           // 可选
-  "verificationCode": "123456",      // 可选，手机验证码
-  "agreeToTerms": true
+  "phone": "13800138000",
+  "code": "123456",
+  "password": "password123"
 }
 ```
+
+**参数说明**:
+- `phone`: 手机号（必填，格式：1[3-9]开头的11位数字）
+- `code`: 短信验证码（必填，6位数字）
+- `password`: 密码（必填，长度6-20位）
 
 #### 响应示例
 
@@ -121,40 +152,37 @@ pageSize: 每页数量，默认 20，最大 100
   "message": "注册成功",
   "data": {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 3600,
-    "user": {
-      "id": "uuid-123",
-      "username": "zhangsan",
-      "email": "user@example.com",
-      "name": "张三",
-      "nickname": "张三",
-      "avatar": null,
-      "phone": "13800138000",
-      "gender": null,
-      "level": 1,
-      "points": 0,
-      "status": "ACTIVE",
-      "createdAt": "2024-10-25T10:00:00Z"
-    }
-  }
+    "tokenName": "satoken",
+    "tokenTimeout": 2592000
+  },
+  "timestamp": 1698345600000
 }
 ```
 
-### 1.2 用户登录（邮箱/手机号）
+**响应说明**:
+- `token`: 访问令牌（Sa-Token）
+- `tokenName`: Token名称（默认为satoken）
+- `tokenTimeout`: Token有效期（秒），默认30天（2592000秒）
+- 注册成功后会自动登录
 
-**接口**: `POST /auth/login`  
-**说明**: 支持邮箱或手机号登录  
+### 1.2 用户登录
+
+**接口**: `POST /api/auth/login`  
+**说明**: 支持手机号或邮箱+密码登录  
 **需要认证**: 否
 
 #### 请求参数
 
 ```json
 {
-  "account": "user@example.com",  // 邮箱或手机号
-  "password": "Password123!"
+  "account": "13800138000",
+  "password": "password123"
 }
 ```
+
+**参数说明**:
+- `account`: 手机号或邮箱（必填）
+- `password`: 密码（必填）
 
 #### 响应示例
 
@@ -163,102 +191,96 @@ pageSize: 每页数量，默认 20，最大 100
   "code": 200,
   "message": "登录成功",
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 3600,
-    "userInfo": {
-      "id": "uuid-123",
-      "username": "zhangsan",
-      "email": "user@example.com",
-      "name": "张三",
-      "nickname": "张三",
-      "avatar": "https://cdn.goabroad.com/avatars/uuid-123.jpg",
-      "bio": "正在准备美国留学",
-      "phone": "13800138000",
-      "gender": "MALE",
-      "level": 5,
-      "points": 1250,
+    "user": {
+      "id": 1,
+      "username": "user_1234567890_5678",
+      "email": null,
+      "phone": "138****8000",
+      "nickname": "用户123456",
+      "avatarUrl": null,
+      "bio": null,
+      "gender": null,
+      "level": 1,
+      "points": 0,
+      "exp": 0,
+      "postCount": 0,
+      "followerCount": 0,
+      "followingCount": 0,
       "status": "ACTIVE",
-      "createdAt": "2024-10-25T10:00:00Z"
-    }
-  }
-}
-```
-
-### 1.3 手机号验证码登录
-
-**接口**: `POST /auth/login/phone`  
-**说明**: 手机号验证码快捷登录  
-**需要认证**: 否
-
-#### 请求参数
-
-```json
-{
-  "phone": "13800138000",
-  "code": "123456"
-}
-```
-
-### 1.4 发送短信验证码
-
-**接口**: `GET /auth/send-sms-code`  
-**说明**: 发送短信验证码（登录、注册、重置密码）  
-**需要认证**: 否
-
-#### 请求参数
-
-```
-phone: 13800138000
-type: login | register | reset  # 验证码类型
-```
-
-#### 响应示例
-
-```json
-{
-  "code": 200,
-  "message": "验证码已发送",
-  "data": {
-    "expiresIn": 300,  // 有效期（秒）
-    "canResendAfter": 60  // 可重新发送倒计时（秒）
-  }
-}
-```
-
-### 1.5 刷新访问令牌
-
-**接口**: `POST /auth/refresh`  
-**说明**: 使用 refreshToken 刷新 accessToken  
-**需要认证**: 否（需要 refreshToken）
-
-#### 请求参数
-
-```json
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-#### 响应示例
-
-```json
-{
-  "code": 200,
-  "message": "Token 刷新成功",
-  "data": {
+      "emailVerified": false,
+      "phoneVerified": true,
+      "isVip": false,
+      "vipExpireAt": null,
+      "lastLoginAt": "2024-10-25T10:00:00",
+      "createdAt": "2024-10-25T10:00:00",
+      "updatedAt": "2024-10-25T10:00:00"
+    },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 3600
-  }
+    "tokenName": "satoken",
+    "tokenTimeout": 2592000
+  },
+  "timestamp": 1698345600000
 }
 ```
 
-### 1.6 用户登出
+**响应说明**:
+- `user`: 用户信息对象
+  - `id`: 用户ID（Long类型）
+  - `username`: 用户名（自动生成，格式：user_时间戳_随机数）
+  - `email`: 邮箱（已脱敏，可能为null）
+  - `phone`: 手机号（已脱敏）
+  - `nickname`: 昵称（自动生成，格式：用户+6位随机数）
+  - `status`: 账号状态（ACTIVE/INACTIVE/BANNED/DELETED）
+  - `gender`: 性别（MALE/FEMALE/OTHER/PREFER_NOT_TO_SAY）
+  - `phoneVerified`: 手机号是否已验证
+  - `emailVerified`: 邮箱是否已验证
+- `token`: 访问令牌
+- `tokenName`: Token名称
+- `tokenTimeout`: Token有效期（秒）
 
-**接口**: `POST /auth/logout`  
-**说明**: 退出登录，使当前 token 失效  
+### 1.3 发送短信验证码
+
+**接口**: `GET /api/auth/send-sms-code`  
+**说明**: 发送短信验证码（用于注册）  
+**需要认证**: 否
+
+#### 请求参数
+
+```
+phone: 13800138000  // 手机号（必填）
+```
+
+**Query参数说明**:
+- `phone`: 手机号（必填，格式：1[3-9]开头的11位数字）
+
+#### 响应示例
+
+```json
+{
+  "code": 200,
+  "message": "验证码已发送，请查收短信",
+  "data": null,
+  "timestamp": 1698345600000
+}
+```
+
+**功能说明**:
+- 验证码为6位数字
+- 有效期为5分钟
+- 验证码会保存在Redis中
+- 开发环境下验证码会打印在控制台日志中
+
+### 1.4 用户登出
+
+**接口**: `POST /api/auth/logout`  
+**说明**: 退出登录，使当前token失效  
 **需要认证**: 是
+
+#### 请求头
+
+```http
+satoken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
 
 #### 请求参数
 
@@ -269,165 +291,30 @@ type: login | register | reset  # 验证码类型
 ```json
 {
   "code": 200,
-  "message": "退出登录成功"
+  "message": "登出成功",
+  "data": null,
+  "timestamp": 1698345600000
 }
 ```
 
-### 1.7 请求重置密码
+**功能说明**:
+- 会清除用户的登录状态
+- Token会立即失效
+- 需要在请求头中携带有效的Token
 
-**接口**: `POST /auth/password/reset-request`  
-**说明**: 发送密码重置邮件或验证码  
-**需要认证**: 否
+### 1.5 其他认证接口（待实现）
 
-#### 请求参数
+以下接口暂未实现，将在后续版本中提供：
 
-```json
-{
-  "email": "user@example.com"
-}
-```
-
-#### 响应示例
-
-```json
-{
-  "code": 200,
-  "message": "重置邮件已发送",
-  "data": {
-    "expiresIn": 1800  // 链接有效期（秒）
-  }
-}
-```
-
-### 1.8 重置密码
-
-**接口**: `POST /auth/password/reset`  
-**说明**: 使用验证码重置密码  
-**需要认证**: 否
-
-#### 请求参数
-
-```json
-{
-  "email": "user@example.com",
-  "code": "abc123",  // 验证码或重置 token
-  "newPassword": "NewPassword123!"
-}
-```
-
-### 1.9 修改密码
-
-**接口**: `POST /auth/password/change`  
-**说明**: 已登录用户修改密码  
-**需要认证**: 是
-
-#### 请求参数
-
-```json
-{
-  "oldPassword": "OldPassword123!",
-  "newPassword": "NewPassword123!"
-}
-```
-
-### 1.10 第三方登录 - 微信
-
-**接口**: `POST /auth/login/wechat`  
-**说明**: 微信授权登录  
-**需要认证**: 否
-
-#### 请求参数
-
-```json
-{
-  "code": "wechat_auth_code"
-}
-```
-
-### 1.11 第三方登录 - Apple
-
-**接口**: `POST /auth/login/apple`  
-**说明**: Apple Sign In 登录  
-**需要认证**: 否
-
-#### 请求参数
-
-```json
-{
-  "identityToken": "apple_identity_token",
-  "authorizationCode": "apple_authorization_code"
-}
-```
-
-### 1.12 检查邮箱是否存在
-
-**接口**: `GET /auth/check-email`  
-**说明**: 检查邮箱是否已注册  
-**需要认证**: 否
-
-#### 请求参数
-
-```
-email: user@example.com
-```
-
-#### 响应示例
-
-```json
-{
-  "code": 200,
-  "message": "Success",
-  "data": {
-    "exists": true
-  }
-}
-```
-
-### 1.13 检查手机号是否存在
-
-**接口**: `GET /auth/check-phone`  
-**说明**: 检查手机号是否已注册  
-**需要认证**: 否
-
-#### 请求参数
-
-```
-phone: 13800138000
-```
-
-### 1.14 获取当前用户信息
-
-**接口**: `GET /auth/me`  
-**说明**: 获取当前登录用户的详细信息  
-**需要认证**: 是
-
-#### 响应示例
-
-```json
-{
-  "code": 200,
-  "message": "Success",
-  "data": {
-    "id": "uuid-123",
-    "username": "zhangsan",
-    "email": "user@example.com",
-    "name": "张三",
-    "nickname": "GoAbroad小新",
-    "avatar": "https://cdn.goabroad.com/avatars/uuid-123.jpg",
-    "bio": "正在准备美国留学",
-    "phone": "13800138000",
-    "gender": "MALE",
-    "level": 5,
-    "points": 1250,
-    "status": "ACTIVE",
-    "badges": ["新人", "探索者"],
-    "targetCountry": "US",
-    "targetType": "study",
-    "createdAt": "2024-01-01T10:00:00Z",
-    "updatedAt": "2024-10-25T10:00:00Z"
-  }
-}
-```
+- 请求重置密码
+- 重置密码
+- 修改密码
+- 第三方登录（微信、Apple）
+- 检查邮箱是否存在
+- 检查手机号是否存在
+- 获取当前用户信息
+- 手机号验证码快捷登录
+- Token刷新
 
 ---
 
@@ -3280,104 +3167,119 @@ limit: 建议数量，默认10
 
 ### 业务错误码
 
-#### 认证相关 (10xxx)
+#### 通用状态码
 
 | 错误码 | 说明 |
 |--------|------|
-| 10001 | 邮箱已被注册 |
-| 10002 | 手机号已被注册 |
-| 10003 | 账号或密码错误 |
-| 10004 | 验证码错误或已过期 |
-| 10005 | Token 已过期 |
-| 10006 | Token 无效 |
-| 10007 | 账号已被禁用 |
-| 10008 | 账号未激活 |
-| 10009 | 第三方登录失败 |
-| 10010 | 邮箱格式错误 |
-| 10011 | 密码强度不足 |
-| 10012 | 验证码发送过于频繁 |
+| 200 | 操作成功 |
+| 500 | 系统错误 |
+| 400 | 请求参数错误 |
+| 401 | 未授权（未登录或Token失效）|
+| 403 | 无权限访问 |
+| 404 | 资源不存在 |
+| 405 | 请求方法不允许 |
+| 422 | 参数验证失败 |
+| 429 | 请求过于频繁 |
 
-#### 用户相关 (20xxx)
+#### 用户相关 (40xxx)
 
 | 错误码 | 说明 |
 |--------|------|
-| 20001 | 用户不存在 |
-| 20002 | 用户已被关注 |
-| 20003 | 用户未被关注 |
-| 20004 | 不能关注自己 |
-| 20005 | 昵称已被使用 |
-| 20006 | 昵称包含敏感词 |
+| 40001 | 用户不存在 |
+| 40002 | 用户已存在 |
+| 40003 | 密码错误 |
+| 40004 | 用户已被禁用 |
+| 40005 | 用户名或密码错误 |
 
-#### 社区相关 (30xxx)
-
-| 错误码 | 说明 |
-|--------|------|
-| 30001 | 帖子不存在 |
-| 30002 | 评论不存在 |
-| 30003 | 无权限编辑此帖子 |
-| 30004 | 无权限删除此帖子 |
-| 30005 | 帖子已被删除 |
-| 30006 | 内容包含敏感词 |
-| 30007 | 图片数量超过限制 |
-| 30008 | 视频大小超过限制 |
-| 30009 | 帖子已被点赞 |
-| 30010 | 帖子未被点赞 |
-| 30011 | 帖子已被收藏 |
-| 30012 | 帖子未被收藏 |
-
-#### 规划相关 (40xxx)
+#### 认证相关 (41xxx)
 
 | 错误码 | 说明 |
 |--------|------|
-| 40001 | 规划不存在 |
-| 40002 | 任务不存在 |
-| 40003 | 材料不存在 |
-| 40004 | 无权限访问此规划 |
-| 40005 | 规划数量已达上限 |
-| 40006 | 文件不存在 |
-| 40007 | 文件大小超过限制 |
-| 40008 | 不支持的文件格式 |
+| 41001 | 未登录或Token失效 |
+| 41002 | Token已过期 |
+| 41003 | Token无效 |
+| 41004 | 无权限访问 |
 
-#### 国家相关 (50xxx)
+#### 帖子相关 (42xxx)
 
 | 错误码 | 说明 |
 |--------|------|
-| 50001 | 国家不存在 |
-| 50002 | 国家已被收藏 |
-| 50003 | 国家未被收藏 |
+| 42001 | 帖子不存在 |
+| 42002 | 帖子已被删除 |
+| 42003 | 无权限操作该帖子 |
 
-#### 文件上传相关 (60xxx)
-
-| 错误码 | 说明 |
-|--------|------|
-| 60001 | 文件不能为空 |
-| 60002 | 文件大小超过限制 |
-| 60003 | 不支持的文件类型 |
-| 60004 | 上传失败 |
-| 60005 | 文件已被删除 |
-
-#### 系统相关 (90xxx)
+#### 评论相关 (43xxx)
 
 | 错误码 | 说明 |
 |--------|------|
-| 90001 | 系统维护中 |
-| 90002 | 接口已废弃 |
-| 90003 | 请求过于频繁 |
-| 90004 | 参数验证失败 |
-| 90005 | 数据库错误 |
-| 90006 | 第三方服务错误 |
+| 43001 | 评论不存在 |
+| 43002 | 评论已被删除 |
+| 43003 | 无权限操作该评论 |
+
+#### 文件上传相关 (44xxx)
+
+| 错误码 | 说明 |
+|--------|------|
+| 44001 | 文件为空 |
+| 44002 | 文件大小超过限制 |
+| 44003 | 不支持的文件类型 |
+| 44004 | 文件上传失败 |
+
+#### 验证相关 (45xxx)
+
+| 错误码 | 说明 |
+|--------|------|
+| 45001 | 验证码错误 |
+| 45002 | 验证码已过期 |
+| 45003 | 验证码发送失败 |
+
+**注意**: 
+- 错误码和错误消息定义在 `ResultCode` 枚举类中
+- 业务异常通过 `BusinessException` 抛出
+- 全局异常处理器会自动捕获异常并返回统一格式的错误响应
 
 ### 错误响应示例
 
+#### 业务异常示例
+
 ```json
 {
-  "code": 10001,
-  "message": "邮箱已被注册",
-  "error": "EMAIL_ALREADY_EXISTS",
-  "details": {
-    "field": "email",
-    "value": "user@example.com"
-  },
+  "code": 40001,
+  "message": "用户不存在",
+  "data": null,
+  "timestamp": 1698345600000
+}
+```
+
+#### 参数验证失败示例
+
+```json
+{
+  "code": 422,
+  "message": "参数验证失败: {code=验证码格式不正确, phone=手机号不能为空}",
+  "data": null,
+  "timestamp": 1698345600000
+}
+```
+
+#### 未登录/Token失效示例
+
+```json
+{
+  "code": 401,
+  "message": "未提供Token",
+  "data": null,
+  "timestamp": 1698345600000
+}
+```
+
+#### 无权限访问示例
+
+```json
+{
+  "code": 403,
+  "message": "无权限访问: 需要权限 post:delete",
+  "data": null,
   "timestamp": 1698345600000
 }
 ```
@@ -3495,13 +3397,49 @@ API 版本通过 URL 路径指定：`/api/v1/`
 
 ## 更新日志
 
-### v1.0.0 (2024-10-25)
+### v0.1.0 (2024-10-25)
 - 初始版本发布
-- 包含完整的认证、用户、国家、规划、社区、工具模块
-- 支持文件上传和通知功能
+- **已实现的功能**:
+  - 认证模块：用户注册（手机号）、登录、登出、发送短信验证码
+  - 统一响应格式（Result）
+  - 全局异常处理
+  - 分页响应（PageResult）
+  - Sa-Token认证集成
+- **待实现的功能**:
+  - 用户模块
+  - 国家模块
+  - 规划模块
+  - 社区模块
+  - 工具模块
+  - 通知模块
+  - 文件上传模块
+  - 搜索模块
+
+---
+
+## 技术栈说明
+
+### 后端技术栈
+- **框架**: Spring Boot 3.2.0
+- **认证**: Sa-Token 1.38.0
+- **数据库**: MySQL 8.0 + Redis
+- **ORM**: Spring Data JPA
+- **文档**: Swagger 3 (springdoc-openapi)
+- **工具类**: Hutool, Lombok
+- **密码加密**: BCrypt
+
+### API开发规范
+- 所有接口统一前缀: `/api`
+- 认证相关接口: `/api/auth`
+- 业务模块接口: `/api/v1/{module}`
+- 使用RESTful风格
+- 统一响应格式
+- 统一异常处理
 
 ---
 
 **文档结束**
 
 如有疑问，请联系技术团队。
+📧 Email: dev@goabroad.com
+🔗 项目地址: https://github.com/goabroad/goabroad-api

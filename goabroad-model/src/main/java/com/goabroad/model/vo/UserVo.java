@@ -2,6 +2,7 @@ package com.goabroad.model.vo;
 
 import com.goabroad.model.enums.Gender;
 import com.goabroad.model.enums.UserStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,118 +23,75 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "用户视图对象")
 public class UserVo implements Serializable {
     
     @Serial
     private static final long serialVersionUID = 1L;
     
-    /**
-     * 用户ID
-     */
+    @Schema(description = "用户ID", example = "1001")
     private Long id;
     
-    /**
-     * 用户名
-     */
+    @Schema(description = "用户名", example = "johndoe")
     private String username;
     
-    /**
-     * 邮箱（脱敏）
-     */
+    @Schema(description = "邮箱（脱敏）", example = "joh****@example.com")
     private String email;
     
-    /**
-     * 手机号（脱敏）
-     */
+    @Schema(description = "手机号（脱敏）", example = "138****8000")
     private String phone;
     
-    /**
-     * 昵称
-     */
+    @Schema(description = "昵称", example = "约翰")
     private String nickname;
     
-    /**
-     * 头像URL
-     */
+    @Schema(description = "头像URL", example = "https://cdn.example.com/avatar/1001.jpg")
     private String avatarUrl;
     
-    /**
-     * 个人简介
-     */
+    @Schema(description = "个人简介", example = "热爱旅行的留学生")
     private String bio;
     
-    /**
-     * 性别
-     */
+    @Schema(description = "性别", example = "MALE")
     private Gender gender;
     
-    /**
-     * 用户等级
-     */
+    @Schema(description = "用户等级", example = "5")
     private Short level;
     
-    /**
-     * 积分
-     */
+    @Schema(description = "积分", example = "1500")
     private Integer points;
     
-    /**
-     * 经验值
-     */
+    @Schema(description = "经验值", example = "8600")
     private Integer exp;
     
-    /**
-     * 发帖数
-     */
+    @Schema(description = "发帖数", example = "42")
     private Integer postCount;
     
-    /**
-     * 粉丝数
-     */
+    @Schema(description = "粉丝数", example = "128")
     private Integer followerCount;
     
-    /**
-     * 关注数
-     */
+    @Schema(description = "关注数", example = "86")
     private Integer followingCount;
     
-    /**
-     * 账号状态
-     */
+    @Schema(description = "账号状态", example = "ACTIVE")
     private UserStatus status;
     
-    /**
-     * 邮箱是否验证
-     */
+    @Schema(description = "邮箱是否验证", example = "true")
     private Boolean emailVerified;
     
-    /**
-     * 手机是否验证
-     */
+    @Schema(description = "手机是否验证", example = "true")
     private Boolean phoneVerified;
     
-    /**
-     * 是否会员
-     */
+    @Schema(description = "是否会员", example = "false")
     private Boolean isVip;
     
-    /**
-     * 会员到期时间
-     */
+    @Schema(description = "会员到期时间", example = "2025-12-31T23:59:59")
     private LocalDateTime vipExpireAt;
     
-    /**
-     * 最后登录时间
-     */
+    @Schema(description = "最后登录时间", example = "2024-10-25T10:30:00")
     private LocalDateTime lastLoginAt;
     
-    /**
-     * 创建时间
-     */
+    @Schema(description = "创建时间", example = "2024-01-15T08:00:00")
     private LocalDateTime createdAt;
     
-    /**
-     * 更新时间
-     */
+    @Schema(description = "更新时间", example = "2024-10-25T10:30:00")
     private LocalDateTime updatedAt;
 }

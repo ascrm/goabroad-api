@@ -22,53 +22,71 @@ public enum ResultCode {
     METHOD_NOT_ALLOWED(405, "请求方法不支持"),
     TOO_MANY_REQUESTS(429, "请求过于频繁"),
     
-    // ========== 认证相关 1xxx ==========
-    AUTH_LOGIN_FAILED(1001, "用户名或密码错误"),
-    AUTH_TOKEN_INVALID(1002, "Token无效或已过期"),
-    AUTH_TOKEN_EXPIRED(1003, "Token已过期"),
-    AUTH_ACCOUNT_DISABLED(1004, "账号已被禁用"),
-    AUTH_ACCOUNT_NOT_FOUND(1005, "账号不存在"),
-    AUTH_USERNAME_EXISTS(1006, "用户名已存在"),
-    AUTH_EMAIL_EXISTS(1007, "邮箱已被注册"),
+    // ========== 认证相关 10xxx ==========
+    EMAIL_ALREADY_EXISTS(10001, "邮箱已被注册"),
+    PHONE_ALREADY_EXISTS(10002, "手机号已被注册"),
+    ACCOUNT_OR_PASSWORD_ERROR(10003, "账号或密码错误"),
+    VERIFICATION_CODE_ERROR(10004, "验证码错误或已过期"),
+    TOKEN_EXPIRED(10005, "Token已过期"),
+    TOKEN_INVALID(10006, "Token无效"),
+    ACCOUNT_BANNED(10007, "账号已被禁用"),
+    ACCOUNT_NOT_ACTIVATED(10008, "账号未激活"),
+    THIRD_PARTY_LOGIN_FAILED(10009, "第三方登录失败"),
+    EMAIL_FORMAT_ERROR(10010, "邮箱格式错误"),
+    PASSWORD_STRENGTH_INSUFFICIENT(10011, "密码强度不足"),
+    VERIFICATION_CODE_SEND_FREQUENTLY(10012, "验证码发送过于频繁"),
     
-    // ========== 用户相关 2xxx ==========
-    USER_NOT_FOUND(2001, "用户不存在"),
-    USER_ALREADY_FOLLOWED(2002, "已关注该用户"),
-    USER_NOT_FOLLOWED(2003, "未关注该用户"),
-    USER_CANNOT_FOLLOW_SELF(2004, "不能关注自己"),
+    // ========== 用户相关 20xxx ==========
+    USER_NOT_FOUND(20001, "用户不存在"),
+    USER_ALREADY_FOLLOWED(20002, "用户已被关注"),
+    USER_NOT_FOLLOWED(20003, "用户未被关注"),
+    USER_CANNOT_FOLLOW_SELF(20004, "不能关注自己"),
+    NICKNAME_ALREADY_USED(20005, "昵称已被使用"),
+    NICKNAME_CONTAINS_SENSITIVE_WORDS(20006, "昵称包含敏感词"),
     
-    // ========== 国家相关 3xxx ==========
-    COUNTRY_NOT_FOUND(3001, "国家信息不存在"),
+    // ========== 社区相关 30xxx ==========
+    POST_NOT_FOUND(30001, "帖子不存在"),
+    COMMENT_NOT_FOUND(30002, "评论不存在"),
+    POST_EDIT_DENIED(30003, "无权限编辑此帖子"),
+    POST_DELETE_DENIED(30004, "无权限删除此帖子"),
+    POST_DELETED(30005, "帖子已被删除"),
+    CONTENT_CONTAINS_SENSITIVE_WORDS(30006, "内容包含敏感词"),
+    IMAGE_COUNT_EXCEEDED(30007, "图片数量超过限制"),
+    VIDEO_SIZE_EXCEEDED(30008, "视频大小超过限制"),
+    POST_ALREADY_LIKED(30009, "帖子已被点赞"),
+    POST_NOT_LIKED(30010, "帖子未被点赞"),
+    POST_ALREADY_COLLECTED(30011, "帖子已被收藏"),
+    POST_NOT_COLLECTED(30012, "帖子未被收藏"),
     
-    // ========== 规划相关 4xxx ==========
-    PLAN_NOT_FOUND(4001, "规划不存在"),
-    PLAN_ACCESS_DENIED(4002, "无权访问该规划"),
-    MATERIAL_NOT_FOUND(4003, "材料不存在"),
+    // ========== 规划相关 40xxx ==========
+    PLAN_NOT_FOUND(40001, "规划不存在"),
+    TASK_NOT_FOUND(40002, "任务不存在"),
+    MATERIAL_NOT_FOUND(40003, "材料不存在"),
+    PLAN_ACCESS_DENIED(40004, "无权限访问此规划"),
+    PLAN_COUNT_EXCEEDED(40005, "规划数量已达上限"),
+    FILE_NOT_FOUND(40006, "文件不存在"),
+    FILE_SIZE_EXCEEDED(40007, "文件大小超过限制"),
+    FILE_TYPE_NOT_SUPPORTED(40008, "不支持的文件格式"),
     
-    // ========== 社区相关 5xxx ==========
-    POST_NOT_FOUND(5001, "帖子不存在"),
-    POST_ACCESS_DENIED(5002, "无权操作该帖子"),
-    COMMENT_NOT_FOUND(5003, "评论不存在"),
-    COMMENT_ACCESS_DENIED(5004, "无权操作该评论"),
-    ALREADY_LIKED(5005, "已点赞"),
-    NOT_LIKED(5006, "未点赞"),
-    ALREADY_COLLECTED(5007, "已收藏"),
-    NOT_COLLECTED(5008, "未收藏"),
+    // ========== 国家相关 50xxx ==========
+    COUNTRY_NOT_FOUND(50001, "国家不存在"),
+    COUNTRY_ALREADY_FAVORITED(50002, "国家已被收藏"),
+    COUNTRY_NOT_FAVORITED(50003, "国家未被收藏"),
     
-    // ========== 通知相关 6xxx ==========
-    NOTIFICATION_NOT_FOUND(6001, "通知不存在"),
-    REMINDER_NOT_FOUND(6002, "提醒不存在"),
+    // ========== 文件上传相关 60xxx ==========
+    FILE_EMPTY(60001, "文件不能为空"),
+    FILE_SIZE_EXCEEDED_LIMIT(60002, "文件大小超过限制"),
+    FILE_TYPE_NOT_SUPPORTED_UPLOAD(60003, "不支持的文件类型"),
+    FILE_UPLOAD_FAILED(60004, "上传失败"),
+    FILE_DELETED(60005, "文件已被删除"),
     
-    // ========== 文件相关 7xxx ==========
-    FILE_UPLOAD_FAILED(7001, "文件上传失败"),
-    FILE_TYPE_NOT_SUPPORTED(7002, "不支持的文件类型"),
-    FILE_SIZE_EXCEEDED(7003, "文件大小超过限制"),
-    FILE_NOT_FOUND(7004, "文件不存在"),
-    
-    // ========== 数据验证相关 8xxx ==========
-    VALIDATION_FAILED(8001, "数据验证失败"),
-    PARAMETER_MISSING(8002, "缺少必要参数"),
-    PARAMETER_INVALID(8003, "参数格式不正确");
+    // ========== 系统相关 90xxx ==========
+    SYSTEM_MAINTENANCE(90001, "系统维护中"),
+    API_DEPRECATED(90002, "接口已废弃"),
+    REQUEST_TOO_FREQUENTLY(90003, "请求过于频繁"),
+    VALIDATION_FAILED(90004, "参数验证失败"),
+    DATABASE_ERROR(90005, "数据库错误"),
+    THIRD_PARTY_SERVICE_ERROR(90006, "第三方服务错误");
     
     private final Integer code;
     private final String message;

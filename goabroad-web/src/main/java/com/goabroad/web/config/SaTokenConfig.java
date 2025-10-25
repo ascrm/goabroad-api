@@ -37,6 +37,11 @@ public class SaTokenConfig implements WebMvcConfigurer {
                         // 排除公开的国家信息接口
                         "/api/countries/**",
                         
+                        // 排除公开的用户接口（GET请求）
+                        "/api/users/*/",
+                        "/api/users/*/following",
+                        "/api/users/*/followers",
+                        
                         // 排除 Swagger 文档
                         "/swagger-ui/**",
                         "/v3/api-docs/**",

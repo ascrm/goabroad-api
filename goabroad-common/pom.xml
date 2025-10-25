@@ -78,5 +78,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
         </dependency>
+
+        <!-- ==================== API 文档 ==================== -->
+        <!-- Springdoc OpenAPI (for @Schema annotations) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
     </dependencies>
 </project>

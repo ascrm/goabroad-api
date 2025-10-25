@@ -9,9 +9,9 @@
 
 -- 连接到数据库
 -- \c goabroad_db;
-
--- 设置时区
-SET timezone = 'Asia/Shanghai';
+--
+-- -- 设置时区
+-- SET timezone = 'Asia/Shanghai';
 
 -- ============================================
 -- 创建更新时间触发器函数

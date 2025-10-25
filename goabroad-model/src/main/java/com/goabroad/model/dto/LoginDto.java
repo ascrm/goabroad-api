@@ -1,5 +1,6 @@
 package com.goabroad.model.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,20 +21,17 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "用户登录请求DTO")
 public class LoginDto implements Serializable {
     
     @Serial
     private static final long serialVersionUID = 1L;
     
-    /**
-     * 手机号或邮箱
-     */
+    @Schema(description = "手机号或邮箱", example = "13800138000", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "手机号/邮箱不能为空")
     private String account;
     
-    /**
-     * 密码
-     */
+    @Schema(description = "密码", example = "password123", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "密码不能为空")
     private String password;
 }

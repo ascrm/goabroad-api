@@ -97,7 +97,7 @@ public class PlanTask extends BaseEntity {
      * 排序顺序
      */
     @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder;
+    private Short sortOrder;
     
     /**
      * 完成时间

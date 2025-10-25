@@ -55,6 +55,6 @@ public class VisaSlot extends BaseEntity {
      */
     @Column(name = "available_slots")
     @Builder.Default
-    private Integer availableSlots = 0;
+    private Short availableSlots = 0;
 }
 

@@ -1,8 +1,10 @@
 package com.goabroad.model.entity;
 
-import lombok.*;
-
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
 
 /**
@@ -79,15 +81,15 @@ public class AuditLog {
     /**
      * 请求数据（JSON）
      */
-    @Column(name = "request_data", columnDefinition = "JSON")
-    // @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "request_data", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String requestData;
     
     /**
      * 响应数据（JSON）
      */
-    @Column(name = "response_data", columnDefinition = "JSON")
-    // @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "response_data", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String responseData;
     
     /**

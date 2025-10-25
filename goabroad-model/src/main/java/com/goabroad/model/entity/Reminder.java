@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "reminders", indexes = {
     @Index(name = "idx_user_id", columnList = "user_id"),
+    @Index(name = "idx_plan_id", columnList = "plan_id"),
     @Index(name = "idx_remind_time", columnList = "remind_time"),
     @Index(name = "idx_is_sent", columnList = "is_sent"),
     @Index(name = "idx_deleted", columnList = "deleted")

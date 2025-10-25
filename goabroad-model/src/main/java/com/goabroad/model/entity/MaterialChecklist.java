@@ -97,13 +97,13 @@ public class MaterialChecklist extends BaseEntity {
      */
     @Column(name = "file_count", nullable = false)
     @Builder.Default
-    private Integer fileCount = 0;
+    private Short fileCount = 0;
     
     /**
      * 排序
      */
     @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder;
+    private Short sortOrder;
     
     /**
      * 完成时间

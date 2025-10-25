@@ -59,7 +59,7 @@ public class MaterialFile extends BaseEntity {
      * 文件大小（字节）
      */
     @Column(name = "file_size")
-    private Long fileSize;
+    private Integer fileSize;
     
     /**
      * 上传时间

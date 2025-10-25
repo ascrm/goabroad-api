@@ -22,7 +22,6 @@
   <modules>
     <module>goabroad-common</module>
     <module>goabroad-model</module>
-    <module>goabroad-repository</module>
     <module>goabroad-service</module>
     <module>goabroad-web</module>
   </modules>
@@ -65,16 +64,6 @@
       <dependency>
         <groupId>com.goabroad</groupId>
         <artifactId>goabroad-model</artifactId>
-        <version>${goabroad.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.goabroad</groupId>
-        <artifactId>goabroad-security</artifactId>
-        <version>${goabroad.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.goabroad</groupId>
-        <artifactId>goabroad-repository</artifactId>
         <version>${goabroad.version}</version>
       </dependency>
       <dependency>

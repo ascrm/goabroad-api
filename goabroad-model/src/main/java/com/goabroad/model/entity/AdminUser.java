@@ -2,9 +2,11 @@ package com.goabroad.model.entity;
 
 import com.goabroad.model.enums.AdminRole;
 import com.goabroad.model.enums.AdminStatus;
-import lombok.*;
-
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
 
 /**
@@ -36,7 +38,7 @@ public class AdminUser extends BaseEntity {
     /**
      * 密码哈希
      */
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
     
     /**
@@ -62,8 +64,8 @@ public class AdminUser extends BaseEntity {
     /**
      * 权限列表（JSON）
      */
-    @Column(name = "permissions", columnDefinition = "JSON")
-    // @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "permissions", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String permissions;
     
     /**

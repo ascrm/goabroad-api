@@ -2,9 +2,11 @@ package com.goabroad.model.entity;
 
 import com.goabroad.model.enums.ContentType;
 import com.goabroad.model.enums.PostStatus;
-import lombok.*;
-
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -50,7 +52,7 @@ public class Post extends BaseEntity {
     /**
      * 正文内容（Markdown）
      */
-    @Column(name = "content", nullable = false, columnDefinition = "MEDIUMTEXT")
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
     
     /**
@@ -94,8 +96,8 @@ public class Post extends BaseEntity {
     /**
      * 图片/视频列表 ["url1","url2"]
      */
-//    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "media_urls", columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "media_urls", columnDefinition = "JSONB")
     private List<String> mediaUrls;
     
     // ========== 统计（冗余，提升性能） ==========

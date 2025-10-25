@@ -5,7 +5,6 @@ import lombok.*;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.Year;
 
 /**
  * 用户详细资料实体类
@@ -57,7 +56,7 @@ public class UserProfile extends BaseEntity {
      * 毕业年份
      */
     @Column(name = "graduation_year")
-    private Year graduationYear;
+    private Short graduationYear;
     
     /**
      * GPA (如 3.75)
@@ -124,6 +123,6 @@ public class UserProfile extends BaseEntity {
      * 出生年份
      */
     @Column(name = "birth_year")
-    private Year birthYear;
+    private Short birthYear;
 }
 

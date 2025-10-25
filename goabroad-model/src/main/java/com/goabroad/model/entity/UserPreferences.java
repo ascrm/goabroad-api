@@ -41,7 +41,7 @@ public class UserPreferences extends BaseEntity {
      * 目标国家代码列表 ["US","UK","CA"]
      * 存储为JSON
      */
-    @Column(name = "target_countries", columnDefinition = "JSON")
+    @Column(name = "target_countries", columnDefinition = "JSONB")
     @JdbcTypeCode(SqlTypes.JSON)
     private String targetCountries;
     

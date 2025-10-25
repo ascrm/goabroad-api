@@ -1,7 +1,8 @@
-package com.goabroad.service.auth;
+package com.goabroad.service.auth.service;
 
 import com.goabroad.model.dto.LoginDto;
 import com.goabroad.model.dto.RegisterDto;
+import com.goabroad.model.vo.UserVo;
 
 /**
  * 认证服务接口

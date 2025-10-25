@@ -58,7 +58,7 @@ goabroad-api (父工程 1.0.0)
 |------|------|------|
 | **Spring Data JPA** | (继承自 Spring Boot) | ORM 框架 |
 | **Hibernate** | (继承自 Spring Boot) | JPA 实现 |
-| **MySQL Connector** | (需在子模块中引入) | MySQL 驱动 |
+| **PostgreSQL JDBC Driver** | (需在子模块中引入) | PostgreSQL 驱动 |
 | **Spring Data Redis** | (需在子模块中引入) | Redis 数据访问 |
 
 ---
@@ -236,7 +236,7 @@ goabroad-api:1.0.0
     - 建议统一为一个版本，推荐使用 `3.3.5`（更稳定）
 
 2. **子模块依赖**：
-    - 数据库驱动（MySQL）需要在具体子模块中引入
+    - 数据库驱动（PostgreSQL）需要在具体子模块中引入
     - Redis 相关依赖需要在子模块中引入
 
 3. **注解处理器顺序**：

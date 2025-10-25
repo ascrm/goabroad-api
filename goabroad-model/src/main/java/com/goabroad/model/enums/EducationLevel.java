@@ -1,57 +1,41 @@
 package com.goabroad.model.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
- * 学历枚举
+ * 教育水平枚举
  * 
  * @author GoAbroad Team
  * @version 1.0
- * @since 2024-10-19
+ * @since 2024-10-25
  */
-@Getter
-@AllArgsConstructor
 public enum EducationLevel {
-    
     /**
      * 高中
      */
-    HIGH_SCHOOL("high_school", "高中"),
+    high_school,
     
     /**
      * 专科
      */
-    ASSOCIATE("associate", "专科"),
+    associate,
     
     /**
      * 本科
      */
-    BACHELOR("bachelor", "本科"),
+    bachelor,
     
     /**
      * 硕士
      */
-    MASTER("master", "硕士"),
+    master,
     
     /**
      * 博士
      */
-    PHD("phd", "博士"),
+    phd,
     
     /**
      * 其他
      */
-    OTHER("other", "其他");
-    
-    /**
-     * 数据库值
-     */
-    private final String value;
-    
-    /**
-     * 描述
-     */
-    private final String description;
+    other
 }
 

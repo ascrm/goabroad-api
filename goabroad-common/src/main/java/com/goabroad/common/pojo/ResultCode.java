@@ -1,4 +1,4 @@
-package com.goabroad.common.response;
+package com.goabroad.common.pojo;
 
 import lombok.Getter;
 

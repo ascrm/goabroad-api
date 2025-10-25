@@ -1,8 +1,12 @@
 package com.goabroad.model.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.*;
-
-import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * 费用计算记录实体类
@@ -40,16 +44,16 @@ public class CostCalculation extends BaseEntity {
      * 输入参数（JSON）
      * 示例：{"school_type":"public","region":"west_coast","tuition":40000}
      */
-    @Column(name = "input_params", nullable = false, columnDefinition = "JSON")
-    // @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "input_params", nullable = false, columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String inputParams;
     
     /**
      * 计算结果（JSON）
      * 示例：{"total_per_year":77500,"breakdown":{...}}
      */
-    @Column(name = "result", nullable = false, columnDefinition = "JSON")
-    // @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "result", nullable = false, columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String result;
     
     /**

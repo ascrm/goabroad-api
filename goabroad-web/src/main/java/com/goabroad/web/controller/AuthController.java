@@ -1,10 +1,11 @@
 package com.goabroad.web.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.goabroad.common.response.Result;
+import com.goabroad.common.pojo.Result;
 import com.goabroad.model.dto.LoginDto;
 import com.goabroad.model.dto.RegisterDto;
-import com.goabroad.service.auth.AuthService;
+import com.goabroad.model.vo.UserVo;
+import com.goabroad.service.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

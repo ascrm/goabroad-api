@@ -65,36 +65,36 @@ public class Country {
     /**
      * 国家概览：{"description":"...","advantages":[],"disadvantages":[]}
      */
-//    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "overview", columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "overview", columnDefinition = "JSONB")
     private String overview;
     
     /**
      * 留学信息：{"education_system":"...","application_process":[],"requirements":{}}
      */
-//    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "study_info", columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "study_info", columnDefinition = "JSONB")
     private String studyInfo;
     
     /**
      * 工作信息：{"visa_types":[],"job_market":"...","salary_range":{}}
      */
-//    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "work_info", columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "work_info", columnDefinition = "JSONB")
     private String workInfo;
     
     /**
      * 移民信息：{"types":[],"requirements":{},"timeline":"..."}
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "immigration_info", columnDefinition = "JSON")
+    @Column(name = "immigration_info", columnDefinition = "JSONB")
     private String immigrationInfo;
     
     /**
      * 生活信息：{"climate":"...","cost_of_living":{},"safety_index":8}
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "living_info", columnDefinition = "JSON")
+    @Column(name = "living_info", columnDefinition = "JSONB")
     private String livingInfo;
     
     // ========== 费用信息 ==========
@@ -124,7 +124,7 @@ public class Country {
      */
     @Column(name = "difficulty_rating", nullable = false)
     @Builder.Default
-    private Integer difficultyRating = 5;
+    private Short difficultyRating = 5;
     
     /**
      * 热度分数

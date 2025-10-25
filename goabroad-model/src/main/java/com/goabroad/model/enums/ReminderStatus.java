@@ -1,15 +1,15 @@
 package com.goabroad.model.enums;
 
 /**
- * 里程碑状态枚举
+ * 提醒状态枚举
  * 
  * @author GoAbroad Team
  * @version 1.0
- * @since 2024-10-19
+ * @since 2024-10-25
  */
-public enum MilestoneStatus {
+public enum ReminderStatus {
     /**
-     * 待完成
+     * 待发送
      */
     PENDING,
     

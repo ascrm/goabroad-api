@@ -2,9 +2,11 @@ package com.goabroad.model.entity;
 
 import com.goabroad.model.enums.PlanStatus;
 import com.goabroad.model.enums.PlanType;
-import lombok.*;
-
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -74,8 +76,8 @@ public class Plan extends BaseEntity {
     /**
      * 用户当前状态：{"education":"bachelor","gpa":3.5,"toefl":100}
      */
-//    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "current_status", columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "current_status", columnDefinition = "JSONB")
     private String currentStatus;
     
     // ========== 进度 ==========
@@ -85,7 +87,7 @@ public class Plan extends BaseEntity {
      */
     @Column(name = "progress", nullable = false)
     @Builder.Default
-    private Integer progress = 0;
+    private Short progress = 0;
     
     /**
      * 当前所处阶段名称
@@ -100,28 +102,28 @@ public class Plan extends BaseEntity {
      */
     @Column(name = "total_stages", nullable = false)
     @Builder.Default
-    private Integer totalStages = 0;
+    private Short totalStages = 0;
     
     /**
      * 已完成阶段数
      */
     @Column(name = "completed_stages", nullable = false)
     @Builder.Default
-    private Integer completedStages = 0;
+    private Short completedStages = 0;
     
     /**
      * 总任务数
      */
     @Column(name = "total_tasks", nullable = false)
     @Builder.Default
-    private Integer totalTasks = 0;
+    private Short totalTasks = 0;
     
     /**
      * 已完成任务数
      */
     @Column(name = "completed_tasks", nullable = false)
     @Builder.Default
-    private Integer completedTasks = 0;
+    private Short completedTasks = 0;
     
     // ========== 状态 ==========
     

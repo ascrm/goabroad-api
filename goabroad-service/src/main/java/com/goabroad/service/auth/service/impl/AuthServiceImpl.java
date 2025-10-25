@@ -1,30 +1,25 @@
-package com.goabroad.service.auth.impl;
+package com.goabroad.service.auth.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.goabroad.common.exception.BusinessException;
-import com.goabroad.common.response.ResultCode;
+import com.goabroad.common.pojo.ResultCode;
+import com.goabroad.model.converter.UserConverter;
 import com.goabroad.model.dto.LoginDto;
 import com.goabroad.model.dto.RegisterDto;
 import com.goabroad.model.entity.User;
 import com.goabroad.model.enums.UserStatus;
-import com.goabroad.repository.mysql.UserRepository;
-import com.goabroad.service.auth.AuthService;
+import com.goabroad.model.vo.UserVo;
+import com.goabroad.service.auth.service.AuthService;
+import com.goabroad.service.auth.tools.AuthTool;
+import com.goabroad.service.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
@@ -48,12 +43,9 @@ public class AuthServiceImpl implements AuthService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    private final RestTemplate restTemplate;
-
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    @Value("${Sms.url}")
-    private String SMS_API_URL;
+    private final AuthTool authTool;
 
     @Override
     public void register(RegisterDto register) {
@@ -72,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
             throw BusinessException.of(ResultCode.ERROR, "验证码错误");
         }
 
-        String randomUsername = generateRandomUsername();
+        String randomUsername = authTool.generateRandomUsername();
         String encodedPassword = passwordEncoder.encode(register.getPassword());
         User user = User.builder()
                 .username(randomUsername)
@@ -110,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         StpUtil.login(user.getId());
         
-        return UserMapper.INSTANCE.toResponse(user);
+        return UserConverter.INSTANCE.toResponse(user);
     }
     
     @Override
@@ -128,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 3. 发送短信
         try {
-            sendSmsRequest(phone, code);
+            authTool.sendSmsRequest(phone, code);
             log.info("短信验证码发送成功, phone: {}, code: {}, 有效期{}分钟", phone, code, CODE_EXPIRE_MINUTES);
         } catch (Exception e) {
             log.error("短信验证码发送失败, phone: {}", phone, e);
@@ -151,39 +143,5 @@ public class AuthServiceImpl implements AuthService {
         }
         
         return savedCode.equals(code);
-    }
-
-    /**
-     * 发送短信请求
-     *
-     * @param phone 手机号
-     * @param code 验证码
-     */
-    private void sendSmsRequest(String phone, String code) {
-        // 构建请求体（表单格式）
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("key1", "GoAbroad");
-        params.add("key2", code);
-        params.add("key3", "3");
-        params.add("targets", phone);
-
-        // 设置请求头
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
-        restTemplate.exchange(SMS_API_URL, HttpMethod.POST, requestEntity, String.class);
-    }
-
-    /**
-     * 生成随机用户名
-     *
-     * @return 随机用户名
-     */
-    private String generateRandomUsername() {
-        long timestamp = System.currentTimeMillis();
-        String timestampSuffix = String.valueOf(timestamp).substring(7); // 取后6位
-        String randomSuffix = RandomUtil.randomNumbers(4);
-        return "user_" + timestampSuffix + "_" + randomSuffix;
     }
 }

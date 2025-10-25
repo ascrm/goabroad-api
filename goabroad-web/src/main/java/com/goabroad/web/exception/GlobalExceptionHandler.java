@@ -1,8 +1,8 @@
 package com.goabroad.web.exception;
 
 import com.goabroad.common.exception.BusinessException;
-import com.goabroad.common.response.Result;
-import com.goabroad.common.response.ResultCode;
+import com.goabroad.common.pojo.Result;
+import com.goabroad.common.pojo.ResultCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;

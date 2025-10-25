@@ -1,47 +1,31 @@
 package com.goabroad.model.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * 内容类型枚举
  * 
  * @author GoAbroad Team
  * @version 1.0
- * @since 2024-10-19
+ * @since 2024-10-25
  */
-@Getter
-@AllArgsConstructor
 public enum ContentType {
-    
     /**
-     * 普通帖子（经验分享）
+     * 帖子
      */
-    POST("post", "普通帖子"),
+    POST,
     
     /**
      * 提问
      */
-    QUESTION("question", "提问"),
+    QUESTION,
     
     /**
-     * 动态（短内容）
+     * 时间线
      */
-    TIMELINE("timeline", "动态"),
+    TIMELINE,
     
     /**
      * 视频日志
      */
-    VLOG("vlog", "视频日志");
-    
-    /**
-     * 数据库值
-     */
-    private final String value;
-    
-    /**
-     * 类型描述
-     */
-    private final String description;
+    VLOG
 }
 

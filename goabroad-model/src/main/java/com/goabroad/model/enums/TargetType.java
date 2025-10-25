@@ -1,36 +1,36 @@
 package com.goabroad.model.enums;
 
 /**
- * 第三方登录平台枚举
+ * 出国目的枚举
  * 
  * @author GoAbroad Team
  * @version 1.0
  * @since 2024-10-25
  */
-public enum OAuthProvider {
+public enum TargetType {
     /**
-     * 微信
+     * 留学
      */
-    wechat,
+    study,
     
     /**
-     * QQ
+     * 工作
      */
-    qq,
+    work,
     
     /**
-     * Apple
+     * 移民
      */
-    apple,
+    immigration,
     
     /**
-     * Google
+     * 旅游
      */
-    google,
+    travel,
     
     /**
-     * GitHub
+     * 未决定
      */
-    github
+    undecided
 }
 

@@ -487,7 +487,7 @@ userId: 用户 ID
   "nickname": "新昵称",
   "bio": "个人简介",
   "targetCountry": "US",
-  "targetType": "STUDY",  // STUDY, WORK, IMMIGRATION
+  "targetType": "study",  // study, work, immigration, travel, undecided
   "targetDate": "2026-09-01",
   "currentStatus": "在读大学生"
 }
@@ -535,8 +535,8 @@ avatar: File（图片文件）
   "code": 200,
   "message": "头像上传成功",
   "data": {
-    "avatarUrl": "https://cdn.goabroad.com/avatars/uuid-123.jpg",
-    "thumbnailUrl": "https://cdn.goabroad.com/avatars/uuid-123_thumb.jpg"
+    "avatar": "https://cdn.goabroad.com/avatars/uuid-123.jpg",
+    "thumbnail": "https://cdn.goabroad.com/avatars/uuid-123_thumb.jpg"
   }
 }
 ```
@@ -578,9 +578,10 @@ type: 帖子类型 (all, POST, QUESTION, TIMELINE)
         "tags": ["美国", "签证", "F1"],
         "likeCount": 125,
         "commentCount": 32,
+        "collectCount": 85,
         "viewCount": 1520,
         "isLiked": false,
-        "isFavorited": false,
+        "isCollected": false,
         "createdAt": "2024-10-20T10:00:00Z"
       }
     ],
@@ -1231,7 +1232,7 @@ limit: 数量限制，默认 10
     "currentStatus": { /* 同请求 */ },
     "preferences": { /* 同请求 */ },
     "progress": 0,
-    "status": "ACTIVE",          // active, completed, paused, archived
+    "status": "ACTIVE",          // ACTIVE, COMPLETED, PAUSED, ARCHIVED
     "timeline": [ /* 生成的时间线 */ ],
     "materialsCount": {
       "total": 25,
@@ -1744,10 +1745,10 @@ pageSize: 每页数量
         "stage": "签证办理",
         "likeCount": 125,
         "commentCount": 32,
-        "favoriteCount": 85,
+        "collectCount": 85,
         "viewCount": 1520,
         "isLiked": false,
-        "isFavorited": false,
+        "isCollected": false,
         "isPinned": false,
         "isFeatured": true,
         "createdAt": "2024-10-20T10:00:00Z",
@@ -1769,10 +1770,10 @@ pageSize: 每页数量
         "country": "UK",
         "likeCount": 15,
         "commentCount": 8,
-        "favoriteCount": 5,
+        "collectCount": 5,
         "viewCount": 280,
         "isLiked": false,
-        "isFavorited": false,
+        "isCollected": false,
         "hasAcceptedAnswer": false,
         "createdAt": "2024-10-24T16:30:00Z"
       }
@@ -1835,10 +1836,10 @@ pageSize: 每页数量
     "stage": "签证办理",
     "likeCount": 125,
     "commentCount": 32,
-    "favoriteCount": 85,
+    "collectCount": 85,
     "viewCount": 1521,  // 自动+1
     "isLiked": false,
-    "isFavorited": false,
+    "isCollected": false,
     "isPinned": false,
     "isFeatured": true,
     "createdAt": "2024-10-20T10:00:00Z",
@@ -1904,7 +1905,7 @@ pageSize: 每页数量
     "country": "US",
     "likeCount": 0,
     "commentCount": 0,
-    "favoriteCount": 0,
+    "collectCount": 0,
     "viewCount": 0,
     "createdAt": "2024-10-25T16:00:00Z"
   }
@@ -1955,7 +1956,7 @@ pageSize: 每页数量
 
 ### 5.7 收藏帖子
 
-**接口**: `POST /community/posts/:postId/favorite`  
+**接口**: `POST /community/posts/:postId/collect`  
 **说明**: 收藏或取消收藏帖子（toggle）  
 **需要认证**: 是
 
@@ -1966,8 +1967,8 @@ pageSize: 每页数量
   "code": 200,
   "message": "收藏成功",
   "data": {
-    "isFavorited": true,
-    "favoriteCount": 86
+    "isCollected": true,
+    "collectCount": 86
   }
 }
 ```
@@ -3238,7 +3239,7 @@ limit: 建议数量，默认10
     "community": {
       "followers": 120,
       "following": 85,
-      "favorites": 45
+      "collections": 45
     },
     "planning": {
       "activePlans": 2,

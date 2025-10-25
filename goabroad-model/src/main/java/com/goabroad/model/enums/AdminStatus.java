@@ -1,37 +1,26 @@
 package com.goabroad.model.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * 管理员状态枚举
  * 
  * @author GoAbroad Team
  * @version 1.0
- * @since 2024-10-19
+ * @since 2024-10-25
  */
-@Getter
-@AllArgsConstructor
 public enum AdminStatus {
+    /**
+     * 正常
+     */
+    ACTIVE,
     
     /**
-     * 启用
+     * 未激活
      */
-    ACTIVE("active", "启用"),
+    INACTIVE,
     
     /**
-     * 禁用
+     * 已禁用
      */
-    DISABLED("disabled", "禁用");
-    
-    /**
-     * 数据库值
-     */
-    private final String value;
-    
-    /**
-     * 描述
-     */
-    private final String description;
+    DISABLED
 }
 

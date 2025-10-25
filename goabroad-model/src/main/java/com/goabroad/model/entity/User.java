@@ -41,7 +41,7 @@ public class User extends BaseEntity {
     /**
      * 邮箱（唯一，可选）
      */
-    @Column(name = "email", nullable = true, length = 100)
+    @Column(name = "email", length = 100)
     private String email;
     
     /**
@@ -90,7 +90,7 @@ public class User extends BaseEntity {
      */
     @Column(name = "level", nullable = false)
     @Builder.Default
-    private Integer level = 1;
+    private Short level = 1;
     
     /**
      * 积分

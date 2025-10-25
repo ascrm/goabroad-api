@@ -64,7 +64,7 @@ public class PlanStage extends BaseEntity {
      * 预计天数
      */
     @Column(name = "duration_days")
-    private Integer durationDays;
+    private Short durationDays;
     
     // ========== 状态 ==========
     
@@ -81,7 +81,7 @@ public class PlanStage extends BaseEntity {
      */
     @Column(name = "progress", nullable = false)
     @Builder.Default
-    private Integer progress = 0;
+    private Short progress = 0;
     
     // ========== 统计 ==========
     
@@ -90,14 +90,14 @@ public class PlanStage extends BaseEntity {
      */
     @Column(name = "total_tasks", nullable = false)
     @Builder.Default
-    private Integer totalTasks = 0;
+    private Short totalTasks = 0;
     
     /**
      * 已完成任务数
      */
     @Column(name = "completed_tasks", nullable = false)
     @Builder.Default
-    private Integer completedTasks = 0;
+    private Short completedTasks = 0;
     
     // ========== 排序 ==========
     
@@ -105,7 +105,7 @@ public class PlanStage extends BaseEntity {
      * 排序顺序
      */
     @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder;
+    private Short sortOrder;
     
     /**
      * 完成时间

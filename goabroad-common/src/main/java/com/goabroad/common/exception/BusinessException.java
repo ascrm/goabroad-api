@@ -1,6 +1,6 @@
 package com.goabroad.common.exception;
 
-import com.goabroad.common.response.ResultCode;
+import com.goabroad.common.pojo.ResultCode;
 import lombok.Getter;
 
 import java.io.Serial;

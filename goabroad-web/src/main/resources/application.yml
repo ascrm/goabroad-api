@@ -147,3 +147,6 @@ sa-token:
   is-read-cookie: false
   # JWT 秘钥（用于 JWT 模式）
   jwt-secret-key: goabroad-jwt-secret-key-2024-very-long-and-secure-key-for-production
+
+Sms:
+  url: https://push.spug.cc/send/E3w5LmlZwWrxYea4

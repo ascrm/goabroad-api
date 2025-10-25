@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Size;
 import java.io.Serial;
 import java.io.Serializable;
 
-import static com.goabroad.common.constant.AppConstants.USERNAME_REGEX;
+import static com.goabroad.common.constant.AppConstant.USERNAME_REGEX;
 
 /**
  * 用户注册请求DTO（手机短信注册）

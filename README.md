@@ -120,8 +120,8 @@ mvn spring-boot:run
 ## 📚 文档
 
 - [后端架构设计文档](docs/GoAbroad%20后端架构设计文档.md)
-- [产品设计文档](docs/GoAbroad产品设计文档.md)
-- [技术栈与依赖清单](docs/GoAbroad技术栈与依赖清单.md)
+- [产品设计文档](docs/GoAbroad%20产品设计文档.md)
+- [技术栈与依赖清单](docs/GoAbroad%20后端技术栈与依赖清单.md)
 - [项目开发提示词](docs/GoAbroad%20项目开发提示词.md)
 - [数据库文档](docs/database/GoAbroad%20数据库设计文档.md)
 - [阶段一完成说明](docs/阶段一完成说明.md)

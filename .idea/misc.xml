@@ -12,6 +12,7 @@
     </option>
     <option name="ignoredFiles">
       <set>
+        <option value="$PROJECT_DIR$/goabroad-repository/pom.xml" />
         <option value="$PROJECT_DIR$/goabroad-security/pom.xml" />
       </set>
     </option>

@@ -2,7 +2,6 @@ package com.goabroad.service.auth;
 
 import com.goabroad.model.dto.LoginDto;
 import com.goabroad.model.dto.RegisterDto;
-import com.goabroad.model.dto.vo.UserVo;
 
 /**
  * 认证服务接口
@@ -29,14 +28,6 @@ public interface AuthService {
     UserVo login(LoginDto request);
     
     /**
-     * 刷新Token
-     * 
-     * @param refreshToken 刷新令牌
-     * @return 新的认证响应
-     */
-    UserVo refreshToken(String refreshToken);
-    
-    /**
      * 用户登出
      * 
      * @param userId 用户ID
@@ -51,14 +42,6 @@ public interface AuthService {
     void sendSmsVerificationCode(String phone);
     
     /**
-     * 验证Token
-     * 
-     * @param token 访问令牌
-     * @return 用户ID，无效则返回null
-     */
-    Long validateToken(String token);
-    
-    /**
      * 验证验证码
      * 
      * @param email 邮箱
@@ -66,13 +49,4 @@ public interface AuthService {
      * @return 是否验证成功
      */
     boolean verifyCode(String email, String code);
-    
-    /**
-     * 重置密码
-     * 
-     * @param email 邮箱
-     * @param code 验证码
-     * @param newPassword 新密码
-     */
-    void resetPassword(String email, String code, String newPassword);
 }

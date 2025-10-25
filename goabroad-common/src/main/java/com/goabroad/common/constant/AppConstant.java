@@ -9,12 +9,12 @@ package com.goabroad.common.constant;
  * @version 1.0
  * @since 2024-10-19
  */
-public final class AppConstants {
+public final class AppConstant {
 
     /**
      * 私有构造方法，防止实例化
      */
-    private AppConstants() {
+    private AppConstant() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 

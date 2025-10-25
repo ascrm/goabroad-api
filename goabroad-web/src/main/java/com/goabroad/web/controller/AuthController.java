@@ -86,11 +86,7 @@ public class AuthController {
     @GetMapping("/send-sms-code")
     @Operation(summary = "发送短信验证码", description = "发送短信验证码")
     public Result<String> sendSmsVerificationCode(@Parameter(description = "手机号") @RequestParam String phone) {
-        log.info("收到发送短信验证码请求, phone: {}", phone);
-
-        // 调用服务层发送短信验证码
         authService.sendSmsVerificationCode(phone);
-
         return Result.success("验证码已发送，请查收短信");
     }
 }

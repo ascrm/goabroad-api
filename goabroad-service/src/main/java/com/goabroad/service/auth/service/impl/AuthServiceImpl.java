@@ -41,11 +41,13 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
 
+    private final UserConverter userConverter;
+
     private final RedisTemplate<String, String> redisTemplate;
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
     private final AuthTool authTool;
+
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public void register(RegisterDto register) {
@@ -102,7 +104,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         StpUtil.login(user.getId());
         
-        return UserConverter.INSTANCE.toResponse(user);
+        return userConverter.toVo(user);
     }
     
     @Override

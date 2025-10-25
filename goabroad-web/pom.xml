@@ -27,13 +27,7 @@
             <artifactId>goabroad-model</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
-        <dependency>
-            <groupId>com.goabroad</groupId>
-            <artifactId>goabroad-repository</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
+
         <dependency>
             <groupId>com.goabroad</groupId>
             <artifactId>goabroad-service</artifactId>

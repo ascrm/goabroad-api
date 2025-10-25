@@ -12,8 +12,6 @@ import jakarta.validation.constraints.Size;
 import java.io.Serial;
 import java.io.Serializable;
 
-import static com.goabroad.common.constant.AppConstant.USERNAME_REGEX;
-
 /**
  * 用户注册请求DTO（手机短信注册）
  * 
@@ -62,7 +60,7 @@ public class RegisterDto implements Serializable {
     /**
      * 用户名（注册时自动生成，后续可修改）
      */
-    @Pattern(regexp = USERNAME_REGEX, message = "用户名格式不正确，只能包含字母、数字、下划线，长度3-20位")
+    @Pattern(regexp = "^[a-zA-Z0-9_]{3,20}$", message = "用户名格式不正确，只能包含字母、数字、下划线，长度3-20位")
     private String username;
     
     /**

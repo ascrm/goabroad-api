@@ -1,9 +1,12 @@
 package com.goabroad.web.config;
 
+import com.goabroad.web.interceptor.LoggingInterceptor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -19,7 +22,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @since 2024-10-19
  */
 @Configuration
+@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    private final LoggingInterceptor loggingInterceptor;
 
     /**
      * 配置跨域
@@ -40,6 +46,21 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
     
     /**
+     * 配置拦截器
+     */
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // 注册日志拦截器
+        registry.addInterceptor(loggingInterceptor)
+                .addPathPatterns("/api/**") // 拦截所有 API 请求
+                .excludePathPatterns(
+                        "/api/health",  // 排除健康检查
+                        "/swagger-ui/**",  // 排除 Swagger UI
+                        "/v3/api-docs/**"  // 排除 API 文档
+                );
+    }
+    
+    /**
      * 配置 RestTemplate Bean
      * 用于发送 HTTP 请求（如短信API调用）
      * 
@@ -49,5 +70,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+    
 }
 

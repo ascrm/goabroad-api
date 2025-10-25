@@ -41,5 +41,8 @@ public class UpdateUserProfileDto {
     @Schema(description = "当前状态", example = "在读大学生")
     @Size(max = 100, message = "当前状态不能超过100个字符")
     private String currentStatus;
+
+    @Schema(description = "用户头像", example = "file://path/to/image.jpg")
+    private String avatarUrl;
 }
 

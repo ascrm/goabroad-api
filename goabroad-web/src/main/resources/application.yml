@@ -19,10 +19,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none # 不自动创建表，需手动执行SQL脚本
-    show-sql: false # 生产环境设置为 false
+    show-sql: false # 开发环境设置为 true，显示 SQL
     properties:
       hibernate:
-        format_sql: true
+        # format_sql: true # 格式化 SQL
+        # use_sql_comments: true # 显示 SQL 注释
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false # 关闭懒加载警告
 
@@ -56,6 +57,20 @@ spring:
       max-file-size: 10MB
       max-request-size: 50MB
 
+# 文件上传配置
+file:
+  upload:
+    max-size: 10485760  # 最大文件大小（10MB）
+
+# MinIO 配置
+minio:
+  endpoint: http://localhost:9000  # MinIO 服务地址
+  access-key: minioadmin  # 访问密钥
+  secret-key: minioadmin  # 密钥
+  bucket-name: goabroad  # 存储桶名称
+  base-url: http://192.168.31.185:9000  # 文件访问URL前缀
+  secure: false  # 是否使用 HTTPS
+
 # SpringDoc 配置
 springdoc:
   api-docs:
@@ -68,19 +83,19 @@ springdoc:
     operations-sorter: alpha
   group-configs:
     - group: 认证模块
-      paths-to-match: /api/v1/auth/**
+      paths-to-match: /api/auth/**
     - group: 用户模块
-      paths-to-match: /api/v1/users/**
+      paths-to-match: /api/users/**
     - group: 国家模块
-      paths-to-match: /api/v1/countries/**
+      paths-to-match: /api/countries/**
     - group: 规划模块
-      paths-to-match: /api/v1/plans/**, /api/v1/materials/**
+      paths-to-match: /api/plans/**, /api/materials/**
     - group: 社区模块
-      paths-to-match: /api/v1/posts/**, /api/v1/comments/**
+      paths-to-match: /api/posts/**, /api/comments/**
     - group: 通知模块
-      paths-to-match: /api/v1/notifications/**, /api/v1/reminders/**
+      paths-to-match: /api/notifications/**, /api/reminders/**
     - group: 文件模块
-      paths-to-match: /api/v1/files/**
+      paths-to-match: /api/files/**
 
 # 服务器配置
 server:
@@ -100,12 +115,14 @@ logging:
   level:
     root: INFO
   pattern:
-    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
-    file: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
   file:
     name: logs/goabroad.log
-    max-size: 10MB
-    max-history: 30
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
 
 # Sa-Token 配置
 sa-token:

@@ -117,8 +117,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserProfileVo updateUserProfile(Long userId, UpdateUserProfileDto dto) {
-        // 更新用户基本信息
-        User user = userMapper.toUser(dto);
+        // 查询现有用户
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
+        
+        // 更新用户基本信息（使用MapStruct，只更新非null字段）
+        userMapper.updateUserFromDto(dto, user);
         userRepository.save(user);
         
         // 更新或创建用户偏好设置

@@ -78,7 +78,8 @@ public enum ResultCode {
     FILE_SIZE_EXCEEDED_LIMIT(60002, "文件大小超过限制"),
     FILE_TYPE_NOT_SUPPORTED_UPLOAD(60003, "不支持的文件类型"),
     FILE_UPLOAD_FAILED(60004, "上传失败"),
-    FILE_DELETED(60005, "文件已被删除"),
+    FILE_DELETE_FAILED(60005, "删除失败"),
+    FILE_DELETED(60006, "文件已被删除"),
     
     // ========== 系统相关 90xxx ==========
     SYSTEM_MAINTENANCE(90001, "系统维护中"),

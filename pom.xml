@@ -43,7 +43,7 @@
     <aliyun-sms.version>2.0.24</aliyun-sms.version>
     <commons-io.version>2.18.0</commons-io.version>
     <guava.version>33.5.0-jre</guava.version>
-    <okhttp.version>5.2.1</okhttp.version>
+    <okhttp.version>5.2.0</okhttp.version>
     <caffeine.version>3.2.2</caffeine.version>
     <resilience4j.version>2.2.0</resilience4j.version>
     <lombok.version>1.18.32</lombok.version>
@@ -142,6 +142,11 @@
         <artifactId>okhttp</artifactId>
         <version>${okhttp.version}</version>
       </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-jvm</artifactId>
+            <version>${okhttp.version}</version>
+        </dependency>
 
       <!-- ==================== 缓存 ==================== -->
       <!-- Caffeine 本地缓存 -->

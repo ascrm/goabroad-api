@@ -43,7 +43,9 @@ public interface UserMapper {
     
     /**
      * 更新User实体（从UpdateUserProfileDto）
+     * 只更新非null字段
      */
-    User toUser(UpdateUserProfileDto dto);
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateUserFromDto(UpdateUserProfileDto dto, @MappingTarget User user);
 }
 

@@ -86,5 +86,25 @@ public interface UserService {
      * @return true-已关注，false-未关注
      */
     boolean isFollowing(Long followerId, Long followeeId);
+    
+    /**
+     * 获取用户发布的帖子列表
+     * 
+     * @param userId 用户ID
+     * @param currentUserId 当前登录用户ID（可能为null）
+     * @param type 帖子类型（可选）
+     * @param pageable 分页参数
+     * @return 帖子列表
+     */
+    PageResult<PostSimpleVo> getUserPosts(Long userId, Long currentUserId, String type, Pageable pageable);
+    
+    /**
+     * 获取用户收藏的帖子列表
+     * 
+     * @param userId 用户ID
+     * @param pageable 分页参数
+     * @return 收藏的帖子列表
+     */
+    PageResult<PostSimpleVo> getUserFavorites(Long userId, Pageable pageable);
 }
 

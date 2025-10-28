@@ -172,4 +172,44 @@ public class UserController {
         PageResult<UserSimpleVo> result = userService.getFollowersList(userId, currentUserId, pageable);
         return Result.success(result);
     }
+    
+    /**
+     * 获取用户发布的帖子
+     */
+    @GetMapping("/{userId}/posts")
+    @Operation(summary = "获取用户发布的帖子", description = "获取指定用户发布的帖子列表")
+    public Result<PageResult<PostSimpleVo>> getUserPosts(
+            @Parameter(description = "用户ID", required = true) @PathVariable Long userId,
+            @Parameter(description = "页码", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量", example = "20") @RequestParam(defaultValue = "20") Integer pageSize,
+            @Parameter(description = "帖子类型", example = "all") @RequestParam(defaultValue = "all") String type) {
+        
+        // 获取当前登录用户ID（如果已登录）
+        Long currentUserId = null;
+        if (StpUtil.isLogin()) {
+            currentUserId = StpUtil.getLoginIdAsLong();
+        }
+        
+        // 页码从0开始
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        PageResult<PostSimpleVo> result = userService.getUserPosts(userId, currentUserId, type, pageable);
+        return Result.success(result);
+    }
+    
+    /**
+     * 获取用户收藏的帖子
+     */
+    @GetMapping("/favorites")
+    @Operation(summary = "获取用户收藏的帖子", description = "获取当前用户收藏的帖子列表")
+    public Result<PageResult<PostSimpleVo>> getUserFavorites(
+            @Parameter(description = "页码", example = "1") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量", example = "20") @RequestParam(defaultValue = "20") Integer pageSize) {
+        
+        Long userId = StpUtil.getLoginIdAsLong();
+        
+        // 页码从0开始
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        PageResult<PostSimpleVo> result = userService.getUserFavorites(userId, pageable);
+        return Result.success(result);
+    }
 }

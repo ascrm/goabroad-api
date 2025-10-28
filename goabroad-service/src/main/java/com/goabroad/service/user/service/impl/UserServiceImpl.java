@@ -10,10 +10,7 @@ import com.goabroad.model.dto.UpdateUserProfileDto;
 import com.goabroad.model.entity.User;
 import com.goabroad.model.entity.UserFollow;
 import com.goabroad.model.entity.UserPreferences;
-import com.goabroad.model.vo.FollowVo;
-import com.goabroad.model.vo.UserProfileVo;
-import com.goabroad.model.vo.UserPublicVo;
-import com.goabroad.model.vo.UserSimpleVo;
+import com.goabroad.model.vo.*;
 import com.goabroad.service.user.repository.UserFollowRepository;
 import com.goabroad.service.user.repository.UserPreferencesRepository;
 import com.goabroad.service.user.repository.UserRepository;
@@ -329,6 +326,60 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isFollowing(Long followerId, Long followeeId) {
         return userFollowRepository.existsByFollowerIdAndFolloweeIdAndDeletedFalse(followerId, followeeId);
+    }
+    
+    @Override
+    public PageResult<PostSimpleVo> getUserPosts(Long userId, Long currentUserId, String type, Pageable pageable) {
+        // TODO: 实现获取用户帖子列表（需要帖子模块支持）
+        // 1. 查询用户是否存在
+        userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
+        
+        // 2. 返回空列表（待帖子模块实现）
+        log.warn("获取用户帖子列表功能待实现: userId={}, type={}", userId, type);
+        
+        Pagination pagination = Pagination.builder()
+                .currentPage(pageable.getPageNumber() + 1)
+                .pageSize(pageable.getPageSize())
+                .totalItems(0L)
+                .totalPages(0)
+                .hasNext(false)
+                .hasPrevious(false)
+                .isFirstPage(true)
+                .isLastPage(true)
+                .build();
+        
+        return PageResult.<PostSimpleVo>builder()
+                .items(new ArrayList<>())
+                .pagination(pagination)
+                .build();
+    }
+    
+    @Override
+    public PageResult<PostSimpleVo> getUserFavorites(Long userId, Pageable pageable) {
+        // TODO: 实现获取用户收藏列表（需要帖子模块支持）
+        // 1. 查询用户是否存在
+        userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
+        
+        // 2. 返回空列表（待帖子模块实现）
+        log.warn("获取用户收藏列表功能待实现: userId={}", userId);
+        
+        Pagination pagination = Pagination.builder()
+                .currentPage(pageable.getPageNumber() + 1)
+                .pageSize(pageable.getPageSize())
+                .totalItems(0L)
+                .totalPages(0)
+                .hasNext(false)
+                .hasPrevious(false)
+                .isFirstPage(true)
+                .isLastPage(true)
+                .build();
+        
+        return PageResult.<PostSimpleVo>builder()
+                .items(new ArrayList<>())
+                .pagination(pagination)
+                .build();
     }
 }
 

@@ -100,6 +100,13 @@ public class Post extends BaseEntity {
     @Column(name = "media_urls", columnDefinition = "JSONB")
     private List<String> mediaUrls;
     
+    /**
+     * 标签列表（JSON存储，用于快速读取）
+     * 注：完整的标签关系在post_tags表中
+     */
+    @Column(name = "tags_json", columnDefinition = "TEXT")
+    private String tagsJson;
+    
     // ========== 统计（冗余，提升性能） ==========
     
     /**

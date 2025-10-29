@@ -2,7 +2,7 @@ package com.goabroad.service.file.tools;
 
 import com.goabroad.common.exception.BusinessException;
 import com.goabroad.common.pojo.ResultCode;
-import com.goabroad.model.enums.FileType;
+import com.goabroad.model.file.enums.FileType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

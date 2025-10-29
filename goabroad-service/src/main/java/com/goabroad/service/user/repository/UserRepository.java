@@ -1,6 +1,6 @@
 package com.goabroad.service.user.repository;
 
-import com.goabroad.model.entity.User;
+import com.goabroad.model.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

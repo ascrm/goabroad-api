@@ -5,12 +5,22 @@ import com.goabroad.common.exception.BusinessException;
 import com.goabroad.common.pojo.PageResult;
 import com.goabroad.common.pojo.Pagination;
 import com.goabroad.common.pojo.ResultCode;
-import com.goabroad.model.converter.UserMapper;
-import com.goabroad.model.dto.UpdateUserProfileDto;
-import com.goabroad.model.entity.User;
-import com.goabroad.model.entity.UserFollow;
-import com.goabroad.model.entity.UserPreferences;
-import com.goabroad.model.vo.*;
+import com.goabroad.model.community.post.converter.PostConverter;
+import com.goabroad.model.community.post.entity.Post;
+import com.goabroad.model.community.post.entity.PostTag;
+import com.goabroad.model.community.post.vo.PostSimpleVo;
+import com.goabroad.model.community.tag.entity.Tag;
+import com.goabroad.model.user.entity.UserFollow;
+import com.goabroad.model.user.entity.UserPreferences;
+import com.goabroad.model.user.vo.FollowVo;
+import com.goabroad.model.user.converter.UserConverter;
+import com.goabroad.model.user.dto.UpdateUserProfileDto;
+import com.goabroad.model.community.post.enums.PostStatus;
+import com.goabroad.model.user.entity.User;
+import com.goabroad.model.user.vo.UserProfileVo;
+import com.goabroad.model.user.vo.UserPublicVo;
+import com.goabroad.model.user.vo.UserSimpleVo;
+import com.goabroad.service.community.post.repository.*;
 import com.goabroad.service.user.repository.UserFollowRepository;
 import com.goabroad.service.user.repository.UserPreferencesRepository;
 import com.goabroad.service.user.repository.UserRepository;
@@ -22,8 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +50,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserFollowRepository userFollowRepository;
     private final UserPreferencesRepository userPreferencesRepository;
-    private final UserMapper userMapper;
+    private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final PostCollectionRepository postCollectionRepository;
+    private final PostTagRepository postTagRepository;
+    private final TagRepository tagRepository;
+    private final UserConverter userConverter;
+    private final PostConverter postConverter;
     
     @Override
     public UserPublicVo getUserPublicProfile(Long userId, Long currentUserId) {
@@ -50,7 +65,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
         
         // 转换为VO
-        UserPublicVo vo = userMapper.toUserPublicVo(user);
+        UserPublicVo vo = userConverter.toUserPublicVo(user);
         
         // 设置统计信息
         UserPublicVo.UserStats stats = UserPublicVo.UserStats.builder()
@@ -97,7 +112,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
         
         // 转换为VO
-        UserProfileVo vo = userMapper.toUserProfileVo(user);
+        UserProfileVo vo = userConverter.toUserProfileVo(user);
         
         // 查询用户偏好设置
         userPreferencesRepository.findByUserIdAndDeletedFalse(userId)
@@ -119,7 +134,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
         
         // 更新用户基本信息（使用MapStruct，只更新非null字段）
-        userMapper.updateUserFromDto(dto, user);
+        userConverter.updateUserFromDto(dto, user);
         userRepository.save(user);
         
         // 更新或创建用户偏好设置
@@ -249,7 +264,7 @@ public class UserServiceImpl implements UserService {
             List<Long> finalFollowedIds = followedIds;
             users = userList.stream()
                     .map(user -> {
-                        UserSimpleVo vo = userMapper.toUserSimpleVo(user);
+                        UserSimpleVo vo = userConverter.toUserSimpleVo(user);
                         vo.setIsFollowing(finalFollowedIds.contains(user.getId()));
                         return vo;
                     })
@@ -298,7 +313,7 @@ public class UserServiceImpl implements UserService {
             List<Long> finalFollowedIds = followedIds;
             users = userList.stream()
                     .map(user -> {
-                        UserSimpleVo vo = userMapper.toUserSimpleVo(user);
+                        UserSimpleVo vo = userConverter.toUserSimpleVo(user);
                         vo.setIsFollowing(finalFollowedIds.contains(user.getId()));
                         return vo;
                     })
@@ -322,7 +337,7 @@ public class UserServiceImpl implements UserService {
                 .pagination(pagination)
                 .build();
     }
-    
+
     @Override
     public boolean isFollowing(Long followerId, Long followeeId) {
         return userFollowRepository.existsByFollowerIdAndFolloweeIdAndDeletedFalse(followerId, followeeId);
@@ -330,27 +345,87 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public PageResult<PostSimpleVo> getUserPosts(Long userId, Long currentUserId, String type, Pageable pageable) {
-        // TODO: 实现获取用户帖子列表（需要帖子模块支持）
         // 1. 查询用户是否存在
         userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
         
-        // 2. 返回空列表（待帖子模块实现）
-        log.warn("获取用户帖子列表功能待实现: userId={}, type={}", userId, type);
+        // 2. 根据类型查询帖子列表
+        Page<Post> postPage = postRepository.findByAuthorIdAndStatusAndDeletedOrderByCreatedAtDesc(
+                    userId, PostStatus.PUBLISHED, false, pageable);
+
+        // 3. 转换为VO
+        List<PostSimpleVo> postVos = new ArrayList<>();
+        if (CollUtil.isNotEmpty(postPage.getContent())) {
+            // 获取帖子ID列表
+            List<Long> postIds = postPage.getContent().stream()
+                    .map(Post::getId)
+                    .collect(Collectors.toList());
+            
+            // 批量查询当前用户的点赞和收藏状态
+            List<Long> likedPostIds = new ArrayList<>();
+            List<Long> collectedPostIds = new ArrayList<>();
+            if (currentUserId != null) {
+                likedPostIds = postLikeRepository.findLikedPostIds(currentUserId, postIds);
+                collectedPostIds = postCollectionRepository.findCollectedPostIds(currentUserId, postIds);
+            }
+            
+            // 批量查询帖子标签
+            Map<Long, List<String>> postTagsMap = new HashMap<>();
+            List<PostTag> postTags = postTagRepository.findByPostIdIn(postIds);
+            if (CollUtil.isNotEmpty(postTags)) {
+                // 获取所有标签ID
+                List<Long> tagIds = postTags.stream()
+                        .map(PostTag::getTagId)
+                        .distinct()
+                        .collect(Collectors.toList());
+                
+                // 批量查询标签详情
+                Map<Long, String> tagMap = tagRepository.findAllById(tagIds).stream()
+                        .collect(Collectors.toMap(Tag::getId, Tag::getName));
+                
+                // 构建帖子ID到标签名称列表的映射
+                postTags.forEach(postTag -> {
+                    String tagName = tagMap.get(postTag.getTagId());
+                    if (tagName != null) {
+                        postTagsMap.computeIfAbsent(postTag.getPostId(), k -> new ArrayList<>())
+                                .add(tagName);
+                    }
+                });
+            }
+            
+            // 转换为VO
+            List<Long> finalLikedPostIds = likedPostIds;
+            List<Long> finalCollectedPostIds = collectedPostIds;
+            postVos = postPage.getContent().stream()
+                    .map(post -> {
+                        // 使用PostConverter进行基础转换
+                        PostSimpleVo vo = postConverter.toPostSimpleVo(post);
+                        // 设置点赞和收藏状态
+                        vo.setIsLiked(finalLikedPostIds.contains(post.getId()));
+                        vo.setIsCollected(finalCollectedPostIds.contains(post.getId()));
+                        // 设置标签
+                        vo.setTags(postTagsMap.getOrDefault(post.getId(), Collections.emptyList()));
+                        return vo;
+                    })
+                    .collect(Collectors.toList());
+        }
         
+        // 4. 构建分页结果
         Pagination pagination = Pagination.builder()
-                .currentPage(pageable.getPageNumber() + 1)
-                .pageSize(pageable.getPageSize())
-                .totalItems(0L)
-                .totalPages(0)
-                .hasNext(false)
-                .hasPrevious(false)
-                .isFirstPage(true)
-                .isLastPage(true)
+                .currentPage(postPage.getNumber() + 1)
+                .pageSize(postPage.getSize())
+                .totalItems(postPage.getTotalElements())
+                .totalPages(postPage.getTotalPages())
+                .hasNext(postPage.hasNext())
+                .hasPrevious(postPage.hasPrevious())
+                .isFirstPage(postPage.isFirst())
+                .isLastPage(postPage.isLast())
                 .build();
         
+        log.info("查询用户帖子列表成功: userId={}, type={}, total={}", userId, type, postPage.getTotalElements());
+        
         return PageResult.<PostSimpleVo>builder()
-                .items(new ArrayList<>())
+                .items(postVos)
                 .pagination(pagination)
                 .build();
     }

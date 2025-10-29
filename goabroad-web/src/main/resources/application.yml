@@ -89,11 +89,11 @@ springdoc:
     - group: 国家模块
       paths-to-match: /api/countries/**
     - group: 规划模块
-      paths-to-match: /api/plans/**, /api/materials/**
+      paths-to-match: /api/plans/**
     - group: 社区模块
-      paths-to-match: /api/posts/**, /api/comments/**
+      paths-to-match: /api/community/**
     - group: 通知模块
-      paths-to-match: /api/notifications/**, /api/reminders/**
+      paths-to-match: /api/notifications/**
     - group: 文件模块
       paths-to-match: /api/files/**
 

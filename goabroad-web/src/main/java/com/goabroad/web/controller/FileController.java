@@ -2,8 +2,8 @@ package com.goabroad.web.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.goabroad.common.pojo.Result;
-import com.goabroad.model.enums.FileType;
-import com.goabroad.model.vo.FileUploadVo;
+import com.goabroad.model.file.enums.FileType;
+import com.goabroad.model.file.vo.FileUploadVo;
 import com.goabroad.service.file.service.FileStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

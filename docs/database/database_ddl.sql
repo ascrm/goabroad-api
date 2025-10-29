@@ -25,77 +25,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================
--- 1. 管理员表
--- ============================================
-CREATE TABLE admin_users (
-    id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    nickname VARCHAR(50),
-    role VARCHAR(20) DEFAULT 'EDITOR' CHECK (role IN ('SUPER_ADMIN', 'ADMIN', 'EDITOR', 'VIEWER')),
-    permissions JSONB,
-    status VARCHAR(20) DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'INACTIVE', 'DISABLED')),
-    last_login_at TIMESTAMP,
-    last_login_ip VARCHAR(45),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted BOOLEAN DEFAULT FALSE,
-    version_id INTEGER DEFAULT 0
-);
-
-CREATE INDEX idx_admin_users_deleted ON admin_users(deleted);
-
-COMMENT ON TABLE admin_users IS '管理员表';
-COMMENT ON COLUMN admin_users.username IS '管理员用户名';
-COMMENT ON COLUMN admin_users.password_hash IS '密码哈希';
-COMMENT ON COLUMN admin_users.email IS '邮箱';
-COMMENT ON COLUMN admin_users.nickname IS '昵称';
-COMMENT ON COLUMN admin_users.permissions IS '权限列表';
-COMMENT ON COLUMN admin_users.deleted IS '逻辑删除标记';
-COMMENT ON COLUMN admin_users.version_id IS '乐观锁版本号';
-
--- 创建更新时间触发器
-CREATE TRIGGER update_admin_users_updated_at BEFORE UPDATE ON admin_users
-FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- ============================================
--- 2. 操作审计日志表
--- ============================================
-CREATE TABLE audit_logs (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT,
-    admin_id BIGINT,
-    action VARCHAR(100) NOT NULL,
-    resource_type VARCHAR(50),
-    resource_id BIGINT,
-    ip_address VARCHAR(45),
-    user_agent VARCHAR(500),
-    request_data JSONB,
-    response_data JSONB,
-    status VARCHAR(20) DEFAULT 'success',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_audit_logs_action ON audit_logs(action);
-CREATE INDEX idx_audit_logs_admin_id ON audit_logs(admin_id);
-CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
-CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
-
-COMMENT ON TABLE audit_logs IS '操作审计日志';
-COMMENT ON COLUMN audit_logs.user_id IS '用户ID';
-COMMENT ON COLUMN audit_logs.admin_id IS '管理员ID';
-COMMENT ON COLUMN audit_logs.action IS '操作动作（user.register/post.delete等）';
-COMMENT ON COLUMN audit_logs.resource_type IS '资源类型';
-COMMENT ON COLUMN audit_logs.resource_id IS '资源ID';
-COMMENT ON COLUMN audit_logs.ip_address IS 'IP地址';
-COMMENT ON COLUMN audit_logs.user_agent IS 'User Agent';
-COMMENT ON COLUMN audit_logs.request_data IS '请求数据';
-COMMENT ON COLUMN audit_logs.response_data IS '响应数据';
-COMMENT ON COLUMN audit_logs.status IS '操作状态（success/failed）';
-
--- ============================================
--- 3. 国家信息表
+-- 1. 国家信息表
 -- ============================================
 CREATE TABLE countries (
     id BIGSERIAL PRIMARY KEY,
@@ -150,7 +80,7 @@ CREATE TRIGGER update_countries_updated_at BEFORE UPDATE ON countries
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 4. 国家政策更新表
+-- 2. 国家政策更新表
 -- ============================================
 CREATE TABLE country_policies (
     id BIGSERIAL PRIMARY KEY,
@@ -187,7 +117,7 @@ CREATE TRIGGER update_country_policies_updated_at BEFORE UPDATE ON country_polic
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 5. 系统配置表
+-- 3. 系统配置表
 -- ============================================
 CREATE TABLE system_configs (
     id BIGSERIAL PRIMARY KEY,
@@ -216,7 +146,7 @@ CREATE TRIGGER update_system_configs_updated_at BEFORE UPDATE ON system_configs
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 6. 标签字典表
+-- 4. 标签字典表
 -- ============================================
 CREATE TABLE tags (
     id BIGSERIAL PRIMARY KEY,
@@ -247,7 +177,7 @@ CREATE TRIGGER update_tags_updated_at BEFORE UPDATE ON tags
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 7. 用户主表
+-- 5. 用户主表
 -- ============================================
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
@@ -259,17 +189,14 @@ CREATE TABLE users (
     avatar_url VARCHAR(500),
     bio VARCHAR(500),
     gender VARCHAR(30) CHECK (gender IN ('MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY')),
-    level SMALLINT DEFAULT 1,
-    points INTEGER DEFAULT 0,
-    exp INTEGER DEFAULT 0,
+    birth_date DATE,
+    location VARCHAR(100),
     post_count INTEGER DEFAULT 0,
     follower_count INTEGER DEFAULT 0,
     following_count INTEGER DEFAULT 0,
     status VARCHAR(20) DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'INACTIVE', 'BANNED', 'DELETED')),
     email_verified BOOLEAN DEFAULT FALSE,
     phone_verified BOOLEAN DEFAULT FALSE,
-    is_vip BOOLEAN DEFAULT FALSE,
-    vip_expire_at TIMESTAMP,
     last_login_at TIMESTAMP,
     last_login_ip VARCHAR(45),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -280,7 +207,6 @@ CREATE TABLE users (
 
 CREATE INDEX idx_users_created_at ON users(created_at);
 CREATE INDEX idx_users_deleted ON users(deleted);
-CREATE INDEX idx_users_level_points ON users(level, points);
 CREATE INDEX idx_users_status ON users(status);
 
 COMMENT ON TABLE users IS '用户主表';
@@ -292,16 +218,13 @@ COMMENT ON COLUMN users.password_hash IS '密码哈希（bcrypt）';
 COMMENT ON COLUMN users.nickname IS '昵称';
 COMMENT ON COLUMN users.avatar_url IS '头像URL';
 COMMENT ON COLUMN users.bio IS '个人简介';
-COMMENT ON COLUMN users.level IS '用户等级 1-10';
-COMMENT ON COLUMN users.points IS '积分';
-COMMENT ON COLUMN users.exp IS '经验值';
+COMMENT ON COLUMN users.birth_date IS '出生日期';
+COMMENT ON COLUMN users.location IS '所在地';
 COMMENT ON COLUMN users.post_count IS '发帖数';
 COMMENT ON COLUMN users.follower_count IS '粉丝数';
 COMMENT ON COLUMN users.following_count IS '关注数';
 COMMENT ON COLUMN users.email_verified IS '邮箱是否验证';
 COMMENT ON COLUMN users.phone_verified IS '手机是否验证';
-COMMENT ON COLUMN users.is_vip IS '是否会员';
-COMMENT ON COLUMN users.vip_expire_at IS '会员到期时间';
 COMMENT ON COLUMN users.last_login_at IS '最后登录时间';
 COMMENT ON COLUMN users.last_login_ip IS '最后登录IP';
 COMMENT ON COLUMN users.created_at IS '创建时间';
@@ -313,7 +236,7 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 8. 费用计算记录表
+-- 6. 费用计算记录表
 -- ============================================
 CREATE TABLE cost_calculations (
     id BIGSERIAL PRIMARY KEY,
@@ -344,7 +267,7 @@ COMMENT ON COLUMN cost_calculations.deleted IS '逻辑删除标记';
 COMMENT ON COLUMN cost_calculations.version_id IS '乐观锁版本号';
 
 -- ============================================
--- 9. GPA转换记录表
+-- 7. GPA转换记录表
 -- ============================================
 CREATE TABLE gpa_conversions (
     id BIGSERIAL PRIMARY KEY,
@@ -372,7 +295,7 @@ COMMENT ON COLUMN gpa_conversions.deleted IS '逻辑删除标记';
 COMMENT ON COLUMN gpa_conversions.version_id IS '乐观锁版本号';
 
 -- ============================================
--- 10. 系统通知表
+-- 8. 系统通知表
 -- ============================================
 CREATE TABLE notifications (
     id BIGSERIAL PRIMARY KEY,
@@ -412,7 +335,7 @@ COMMENT ON COLUMN notifications.deleted IS '逻辑删除标记';
 COMMENT ON COLUMN notifications.version_id IS '乐观锁版本号';
 
 -- ============================================
--- 11. 用户规划表
+-- 9. 用户规划表
 -- ============================================
 CREATE TABLE plans (
     id BIGSERIAL PRIMARY KEY,
@@ -466,7 +389,7 @@ CREATE TRIGGER update_plans_updated_at BEFORE UPDATE ON plans
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 12. 材料清单表
+-- 10. 材料清单表
 -- ============================================
 CREATE TABLE material_checklists (
     id BIGSERIAL PRIMARY KEY,
@@ -512,7 +435,7 @@ CREATE TRIGGER update_material_checklists_updated_at BEFORE UPDATE ON material_c
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 13. 材料文件记录表
+-- 11. 材料文件记录表
 -- ============================================
 CREATE TABLE material_files (
     id BIGSERIAL PRIMARY KEY,
@@ -546,7 +469,7 @@ COMMENT ON COLUMN material_files.deleted IS '逻辑删除标记';
 COMMENT ON COLUMN material_files.version_id IS '乐观锁版本号';
 
 -- ============================================
--- 14. 规划里程碑表
+-- 12. 规划里程碑表
 -- ============================================
 CREATE TABLE plan_milestones (
     id BIGSERIAL PRIMARY KEY,
@@ -584,7 +507,7 @@ CREATE TRIGGER update_plan_milestones_updated_at BEFORE UPDATE ON plan_milestone
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 15. 规划阶段表
+-- 13. 规划阶段表
 -- ============================================
 CREATE TABLE plan_stages (
     id BIGSERIAL PRIMARY KEY,
@@ -631,7 +554,7 @@ CREATE TRIGGER update_plan_stages_updated_at BEFORE UPDATE ON plan_stages
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 16. 规划任务表
+-- 14. 规划任务表
 -- ============================================
 CREATE TABLE plan_tasks (
     id BIGSERIAL PRIMARY KEY,
@@ -678,7 +601,7 @@ CREATE TRIGGER update_plan_tasks_updated_at BEFORE UPDATE ON plan_tasks
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 17. 帖子表
+-- 15. 帖子表
 -- ============================================
 CREATE TABLE posts (
     id BIGSERIAL PRIMARY KEY,
@@ -749,7 +672,7 @@ CREATE TRIGGER update_posts_updated_at BEFORE UPDATE ON posts
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 18. 评论表
+-- 16. 评论表
 -- ============================================
 CREATE TABLE comments (
     id BIGSERIAL PRIMARY KEY,
@@ -792,7 +715,7 @@ CREATE TRIGGER update_comments_updated_at BEFORE UPDATE ON comments
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 19. 帖子收藏记录表
+-- 17. 帖子收藏记录表
 -- ============================================
 CREATE TABLE post_collections (
     id BIGSERIAL PRIMARY KEY,
@@ -818,7 +741,7 @@ COMMENT ON COLUMN post_collections.deleted IS '逻辑删除标记';
 COMMENT ON COLUMN post_collections.version_id IS '乐观锁版本号';
 
 -- ============================================
--- 20. 帖子点赞记录表
+-- 18. 帖子点赞记录表
 -- ============================================
 CREATE TABLE post_likes (
     id BIGSERIAL PRIMARY KEY,
@@ -842,7 +765,7 @@ COMMENT ON COLUMN post_likes.deleted IS '逻辑删除标记';
 COMMENT ON COLUMN post_likes.version_id IS '乐观锁版本号';
 
 -- ============================================
--- 21. 帖子标签关联表
+-- 19. 帖子标签关联表
 -- ============================================
 CREATE TABLE post_tags (
     id BIGSERIAL PRIMARY KEY,
@@ -864,7 +787,7 @@ COMMENT ON COLUMN post_tags.deleted IS '逻辑删除标记';
 COMMENT ON COLUMN post_tags.version_id IS '乐观锁版本号';
 
 -- ============================================
--- 22. 用户提醒表
+-- 20. 用户提醒表
 -- ============================================
 CREATE TABLE reminders (
     id BIGSERIAL PRIMARY KEY,
@@ -912,7 +835,7 @@ CREATE TRIGGER update_reminders_updated_at BEFORE UPDATE ON reminders
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 23. 用户收藏国家表
+-- 21. 用户收藏国家表
 -- ============================================
 CREATE TABLE user_country_favorites (
     id BIGSERIAL PRIMARY KEY,
@@ -934,7 +857,7 @@ COMMENT ON COLUMN user_country_favorites.deleted IS '逻辑删除标记';
 COMMENT ON COLUMN user_country_favorites.version_id IS '乐观锁版本号';
 
 -- ============================================
--- 24. 用户关注关系表
+-- 22. 用户关注关系表
 -- ============================================
 CREATE TABLE user_follows (
     id BIGSERIAL PRIMARY KEY,
@@ -958,7 +881,7 @@ COMMENT ON COLUMN user_follows.deleted IS '逻辑删除标记';
 COMMENT ON COLUMN user_follows.version_id IS '乐观锁版本号';
 
 -- ============================================
--- 25. 第三方登录绑定表
+-- 23. 第三方登录绑定表
 -- ============================================
 CREATE TABLE user_oauth_bindings (
     id BIGSERIAL PRIMARY KEY,
@@ -997,7 +920,7 @@ CREATE TRIGGER update_user_oauth_bindings_updated_at BEFORE UPDATE ON user_oauth
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 26. 用户偏好设置表
+-- 24. 用户偏好设置表
 -- ============================================
 CREATE TABLE user_preferences (
     id BIGSERIAL PRIMARY KEY,
@@ -1038,7 +961,7 @@ CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON user_preferen
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 27. 用户详细资料表
+-- 25. 用户详细资料表
 -- ============================================
 CREATE TABLE user_profiles (
     id BIGSERIAL PRIMARY KEY,
@@ -1089,7 +1012,7 @@ CREATE TRIGGER update_user_profiles_updated_at BEFORE UPDATE ON user_profiles
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 28. 签证预约信息表
+-- 26. 签证预约信息表
 -- ============================================
 CREATE TABLE visa_slots (
     id BIGSERIAL PRIMARY KEY,
@@ -1126,7 +1049,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 -- 完成提示
 -- ============================================
 -- 数据库表创建完成！
--- 总共创建了28张表，包含所有必要的索引、外键约束和注释
+-- 总共创建了26张表，包含所有必要的索引、外键约束和注释
 -- 
 -- 下一步操作：
 -- 1. 根据需要插入初始数据

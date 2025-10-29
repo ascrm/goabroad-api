@@ -1,7 +1,7 @@
 package com.goabroad.service.community.post.service;
 
-import com.goabroad.model.dto.CreatePostDto;
-import com.goabroad.model.vo.PostDetailVo;
+import com.goabroad.model.community.post.dto.CreatePostDto;
+import com.goabroad.model.community.post.vo.PostDetailVo;
 
 /**
  * 帖子服务接口

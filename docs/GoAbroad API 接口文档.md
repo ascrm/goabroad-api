@@ -4,7 +4,32 @@
 **版本**: v0.1.0  
 **基础URL**: `http://localhost:8080/api`  
 **文档生成日期**: 2024-10-25  
+**最后修订**: 2024-10-29（数据库一致性修正）  
 **当前状态**: 开发中（仅实现部分认证接口）
+
+---
+
+## ⚠️ 文档修正说明
+
+本次修订重点确保API接口文档与数据库DDL设计完全一致，主要修正内容：
+
+### 🔧 全局修正
+1. **ID类型统一**: 所有ID字段改为数字类型（与数据库BIGSERIAL一致），如 `"id": 123` 而非 `"id": "post-123"`
+2. **字段命名统一**: 字段名与数据库列名保持一致（如 `avatarUrl` 而非 `avatar`）
+3. **分页格式统一**: 使用标准分页响应格式（currentPage, totalItems, hasNext等）
+4. **时间格式统一**: 去掉ISO 8601的Z后缀，统一为 `"2024-10-25T10:00:00"`
+
+### 📋 分模块修正
+- **用户模块**: avatar→avatarUrl, 移除不存在的字段（likesCount, targetCountry等）
+- **国家模块**: 移除不存在的字段（flagUrl, region, language等，这些在overview JSONB中）
+- **帖子模块**: tags从数组改为逗号分隔字符串，移除videos字段，添加summary字段
+- **评论模块**: 移除images字段，添加replyToUserId，添加status字段
+- **规划模块**: country改为countryId，移除冗余的统计字段
+- **通知模块**: 添加targetType和targetId，移除actionUrl字段
+
+详细修正点请查看各接口响应示例后的 **🔧 [已修正]** 标记。
+
+---
 
 ## 📑 目录
 
@@ -223,6 +248,8 @@ pageSize: 每页数量，默认 20，最大 100
 }
 ```
 
+**🔧 [已修正]**: user.id 保持数字类型（与数据库BIGSERIAL一致）
+
 **响应说明**:
 - `user`: 用户信息对象
   - `id`: 用户ID（Long类型）
@@ -339,27 +366,33 @@ userId: 用户 ID
   "code": 200,
   "message": "Success",
   "data": {
-    "id": "uuid-123",
+    "id": 123,
     "username": "goabroad_xiaoxin",
     "nickname": "GoAbroad小新",
-    "avatar": "https://cdn.goabroad.com/avatars/uuid-123.jpg",
+    "avatarUrl": "https://cdn.goabroad.com/avatars/123.jpg",
     "bio": "正在准备美国留学",
     "gender": "MALE",
     "level": 5,
     "status": "ACTIVE",
     "badges": ["新人", "探索者", "热心助人"],
-    "targetCountry": "US",
     "stats": {
-      "postsCount": 25,
-      "followersCount": 120,
-      "followingCount": 85,
-      "likesCount": 350
+      "postCount": 25,
+      "followerCount": 120,
+      "followingCount": 85
     },
-    "isFollowing": false,  // 当前用户是否关注该用户
-    "createdAt": "2024-01-01T10:00:00Z"
+    "isFollowing": false,
+    "createdAt": "2024-01-01T10:00:00"
   }
 }
 ```
+
+**🔧 [已修正]**: 
+- id改为数字类型
+- avatar改为avatarUrl（与数据库avatar_url一致）
+- stats字段名改为与数据库一致（postCount, followerCount, followingCount）
+- 移除likesCount（数据库无此字段）
+- 移除targetCountry（应从user_preferences表查询）
+- 时间格式统一去掉Z后缀
 
 ### 2.2 更新用户资料
 
@@ -373,12 +406,11 @@ userId: 用户 ID
 {
   "nickname": "新昵称",
   "bio": "个人简介",
-  "targetCountry": "US",
-  "targetType": "study",  // study, work, immigration, travel, undecided
-  "targetDate": "2026-09-01",
-  "currentStatus": "在读大学生"
+  "gender": "MALE"
 }
 ```
+
+**🔧 [已修正]**: 移除targetCountry、targetType、targetDate、currentStatus（这些字段属于user_preferences表，应使用单独的接口更新）
 
 #### 响应示例
 
@@ -387,20 +419,18 @@ userId: 用户 ID
   "code": 200,
   "message": "资料更新成功",
   "data": {
-    "id": "uuid-123",
+    "id": 123,
     "username": "zhangsan",
     "nickname": "新昵称",
     "bio": "个人简介",
     "gender": "MALE",
-    "targetCountry": "US",
-    "targetType": "study",
-    "targetDate": "2026-09-01",
-    "currentStatus": "在读大学生",
     "status": "ACTIVE",
-    "updatedAt": "2024-10-25T10:30:00Z"
+    "updatedAt": "2024-10-25T10:30:00"
   }
 }
 ```
+
+**🔧 [已修正]**: id改为数字类型，移除user_preferences相关字段
 
 ### 2.3 上传头像
 
@@ -422,11 +452,13 @@ avatar: File（图片文件）
   "code": 200,
   "message": "头像上传成功",
   "data": {
-    "avatar": "https://cdn.goabroad.com/avatars/uuid-123.jpg",
-    "thumbnail": "https://cdn.goabroad.com/avatars/uuid-123_thumb.jpg"
+    "avatarUrl": "https://cdn.goabroad.com/avatars/123.jpg",
+    "thumbnailUrl": "https://cdn.goabroad.com/avatars/123_thumb.jpg"
   }
 }
 ```
+
+**🔧 [已修正]**: avatar改为avatarUrl，thumbnail改为thumbnailUrl（与数据库命名一致）
 
 ### 2.4 获取用户发布的帖子
 
@@ -457,11 +489,11 @@ type: 帖子类型 (all, POST, QUESTION, TIMELINE)
   "data": {
     "items": [
       {
-        "id": "post-123",
+        "id": 123,
         "title": "美国F1签证面签经验分享",
-        "content": "今天刚刚通过面签...",
+        "summary": "今天刚刚通过面签...",
         "coverImage": "https://cdn.goabroad.com/posts/cover-123.jpg",
-        "type": "post",
+        "contentType": "POST",
         "tags": ["美国", "签证", "F1"],
         "likeCount": 125,
         "commentCount": 32,
@@ -469,19 +501,29 @@ type: 帖子类型 (all, POST, QUESTION, TIMELINE)
         "viewCount": 1520,
         "isLiked": false,
         "isCollected": false,
-        "createdAt": "2024-10-20T10:00:00Z"
+        "createdAt": "2024-10-20T10:00:00"
       }
     ],
     "pagination": {
-      "page": 1,
+      "currentPage": 1,
       "pageSize": 20,
-      "total": 25,
+      "totalItems": 25,
       "totalPages": 2,
-      "hasMore": true
+      "hasNext": true,
+      "hasPrevious": false,
+      "isFirstPage": true,
+      "isLastPage": false
     }
   }
 }
 ```
+
+**🔧 [已修正]**: 
+- id改为数字类型
+- content改为summary（列表显示摘要）
+- type改为contentType（与数据库content_type一致）
+- pagination结构改为统一格式（与文档开头定义一致）
+- 移除时间Z后缀
 
 ### 2.5 获取用户收藏的帖子
 
@@ -572,57 +614,68 @@ pageSize: 每页数量
   "data": {
     "items": [
       {
-        "id": "country-us",
+        "id": 1,
         "code": "US",
         "nameZh": "美国",
         "nameEn": "United States",
         "flagEmoji": "🇺🇸",
-        "flagUrl": "https://cdn.goabroad.com/flags/us.png",
-        "region": "north_america",
-        "language": ["english"],
-        "currency": "USD",
-        "summary": "教育资源丰富，世界顶尖大学众多",
-        "tags": ["留学热门", "移民友好", "科技发达"],
-        "difficulty": "medium",
-        "costLevel": "high",
+        "difficultyRating": 5,
         "popularityScore": 95,
-        "stats": {
-          "studentsCount": 5280,  // 使用该app规划的用户数
-          "postsCount": 1520,     // 相关帖子数
-          "guidesCount": 45       // 攻略数
-        },
+        "avgTuitionMin": 200000.00,
+        "avgTuitionMax": 500000.00,
+        "avgLivingCost": 150000.00,
+        "planCount": 5280,
+        "viewCount": 125000,
+        "isActive": true,
+        "isFeatured": true,
         "isFavorited": false,
-        "createdAt": "2024-01-01T10:00:00Z"
+        "createdAt": "2024-01-01T10:00:00",
+        "updatedAt": "2024-10-20T10:00:00"
       },
       {
-        "id": "country-uk",
+        "id": 2,
         "code": "UK",
         "nameZh": "英国",
         "nameEn": "United Kingdom",
         "flagEmoji": "🇬🇧",
-        "summary": "学制短，教育质量高",
-        "tags": ["留学热门", "历史悠久"],
-        "difficulty": "medium",
-        "costLevel": "high",
+        "difficultyRating": 5,
         "popularityScore": 88,
-        "stats": {
-          "studentsCount": 3850,
-          "postsCount": 980,
-          "guidesCount": 32
-        },
-        "isFavorited": true
+        "avgTuitionMin": 250000.00,
+        "avgTuitionMax": 450000.00,
+        "avgLivingCost": 180000.00,
+        "planCount": 3850,
+        "viewCount": 98000,
+        "isActive": true,
+        "isFeatured": true,
+        "isFavorited": true,
+        "createdAt": "2024-01-01T10:00:00",
+        "updatedAt": "2024-10-20T10:00:00"
       }
     ],
     "pagination": {
-      "page": 1,
+      "currentPage": 1,
       "pageSize": 20,
-      "total": 15,
+      "totalItems": 15,
       "totalPages": 1,
-      "hasMore": false
+      "hasNext": false,
+      "hasPrevious": false,
+      "isFirstPage": true,
+      "isLastPage": true
     }
   }
 }
 ```
+
+**🔧 [已修正 - 重要]**: 
+- id改为数字类型（BIGSERIAL）
+- 移除flagUrl（数据库没有此字段）
+- 移除region、language、currency、summary、tags（这些在overview JSONB中）
+- difficulty改为difficultyRating，类型为数字（1-10）
+- 移除costLevel（数据库没有此字段）
+- stats.studentsCount改为planCount（与数据库plan_count一致）
+- 移除stats.postsCount、guidesCount（数据库无此字段）
+- 添加数据库实际存在的字段：avgTuitionMin、avgTuitionMax、avgLivingCost、viewCount、isActive、isFeatured、updatedAt
+- pagination改为统一格式
 
 ### 3.2 获取国家详情
 
@@ -643,21 +696,28 @@ countryId: 国家 ID 或国家代码 (如 "US", "UK")
   "code": 200,
   "message": "Success",
   "data": {
-    "id": "country-us",
+    "id": 1,
     "code": "US",
     "nameZh": "美国",
     "nameEn": "United States",
     "flagEmoji": "🇺🇸",
-    "flagUrl": "https://cdn.goabroad.com/flags/us.png",
-    "region": "north_america",
-    "capital": "华盛顿",
-    "language": ["english"],
-    "currency": "USD",
-    "timezone": "UTC-5 ~ UTC-10",
-    "
+    "difficultyRating": 5,
+    "popularityScore": 95,
+    "avgTuitionMin": 200000.00,
+    "avgTuitionMax": 500000.00,
+    "avgLivingCost": 150000.00,
+    "planCount": 5280,
+    "viewCount": 125000,
+    "isActive": true,
+    "isFeatured": true,
     
-    // 概览信息
+    // 以下字段来自overview JSONB
     "overview": {
+      "region": "north_america",
+      "capital": "华盛顿",
+      "languages": ["english"],
+      "currency": "USD",
+      "timezone": "UTC-5 ~ UTC-10",
       "summary": "美国拥有世界上最多的顶尖大学...",
       "advantages": [
         "教育资源丰富，世界排名前100大学占比最高",
@@ -979,27 +1039,7 @@ countryId: 国家 ID 或国家代码 (如 "US", "UK")
       }
     },
     
-    // 统计数据
-    "stats": {
-      "studentsCount": 5280,
-      "postsCount": 1520,
-      "guidesCount": 45,
-      "viewCount": 125000
-    },
-    
-    // 相关攻略
-    "guides": [
-      {
-        "id": "guide-123",
-        "title": "2024美国留学完整指南",
-        "author": "GoAbroad官方",
-        "viewCount": 15200,
-        "likeCount": 850,
-        "createdAt": "2024-09-01T10:00:00Z"
-      }
-    ],
-    
-    // 常见问题
+    // 以下字段来自faqs JSONB
     "faqs": [
       {
         "question": "美国留学需要多少钱？",
@@ -1016,11 +1056,21 @@ countryId: 国家 ID 或国家代码 (如 "US", "UK")
     ],
     
     "isFavorited": false,
-    "createdAt": "2024-01-01T10:00:00Z",
-    "updatedAt": "2024-10-20T10:00:00Z"
+    "createdAt": "2024-01-01T10:00:00",
+    "updatedAt": "2024-10-20T10:00:00"
   }
 }
 ```
+
+**🔧 [已修正 - 关键]**:
+- id改为数字类型
+- 移除flagUrl（数据库无此字段）
+- 主字段（id, code, nameZh等）与数据库字段一致
+- overview、studyInfo、workInfo、immigrationInfo、livingInfo都是JSONB字段
+- 移除stats对象，相关计数字段已在主字段中（planCount, viewCount）
+- 移除guides数组（应通过关联查询获取）
+- language改为languages（复数形式更合理）
+- 时间格式去掉Z后缀
 
 ### 3.3 搜索国家
 
@@ -1109,34 +1159,27 @@ limit: 数量限制，默认 10
   "code": 200,
   "message": "规划创建成功",
   "data": {
-    "id": "plan-123",
-    "userId": "user-123",
-    "country": "US",
-    "countryName": "美国",
+    "id": 123,
+    "userId": 1,
+    "countryId": 1,
     "planType": "STUDY",
-    "subType": "master",
     "targetDate": "2026-09-01",
-    "currentStatus": { /* 同请求 */ },
-    "preferences": { /* 同请求 */ },
     "progress": 0,
-    "status": "ACTIVE",          // ACTIVE, COMPLETED, PAUSED, ARCHIVED
-    "timeline": [ /* 生成的时间线 */ ],
-    "materialsCount": {
-      "total": 25,
-      "completed": 0,
-      "inProgress": 0,
-      "notStarted": 25
-    },
-    "tasksCount": {
-      "total": 48,
-      "completed": 0,
-      "upcoming": 5
-    },
-    "createdAt": "2024-10-25T10:00:00Z",
-    "updatedAt": "2024-10-25T10:00:00Z"
+    "status": "ACTIVE",
+    "createdAt": "2024-10-25T10:00:00",
+    "updatedAt": "2024-10-25T10:00:00"
   }
 }
 ```
+
+**🔧 [已修正 - 重要]**:
+- id和userId改为数字类型
+- country改为countryId（数据库外键）
+- 移除countryName（需通过关联查询获取）
+- 移除subType字段（数据库plans表无此字段，可存在preferences JSONB中）
+- 移除currentStatus、preferences（这些是JSONB字段，创建时可选）
+- 移除timeline、materialsCount、tasksCount（需通过关联查询计算）
+- 时间格式去掉Z后缀
 
 ### 4.2 获取规划列表
 
@@ -1158,45 +1201,28 @@ status: 规划状态 (ACTIVE, COMPLETED, PAUSED, ARCHIVED)
   "message": "Success",
   "data": [
     {
-      "id": "plan-123",
-      "country": "US",
-      "countryName": "美国",
-      "countryFlag": "🇺🇸",
+      "id": 123,
+      "userId": 1,
+      "countryId": 1,
       "planType": "STUDY",
-      "subType": "master",
       "targetDate": "2026-09-01",
       "progress": 35,
       "status": "ACTIVE",
-      "daysUntilTarget": 678,
-      "materialsCount": {
-        "total": 25,
-        "completed": 8
-      },
-      "tasksCount": {
-        "total": 48,
-        "completed": 15,
-        "upcoming": 3
-      },
-      "upcomingTasks": [
-        {
-          "id": "task-1",
-          "title": "完成托福考试",
-          "dueDate": "2024-12-15",
-          "priority": "high"
-        },
-        {
-          "id": "task-2",
-          "title": "准备推荐信",
-          "dueDate": "2024-12-20",
-          "priority": "medium"
-        }
-      ],
-      "createdAt": "2024-10-25T10:00:00Z",
-      "updatedAt": "2024-10-25T10:00:00Z"
+      "createdAt": "2024-10-25T10:00:00",
+      "updatedAt": "2024-10-25T10:00:00"
     }
   ]
 }
 ```
+
+**🔧 [已修正]**:
+- 所有ID改为数字类型
+- country改为countryId
+- 移除countryName、countryFlag、subType（需关联查询或存在JSONB中）
+- 移除daysUntilTarget（前端计算）
+- 移除materialsCount、tasksCount、upcomingTasks（需关联查询计算）
+- 简化为基础字段，详细信息通过详情接口获取
+- 时间格式去掉Z后缀
 
 ### 4.3 获取规划详情
 
@@ -1211,13 +1237,10 @@ status: 规划状态 (ACTIVE, COMPLETED, PAUSED, ARCHIVED)
   "code": 200,
   "message": "Success",
   "data": {
-    "id": "plan-123",
-    "userId": "user-123",
-    "country": "US",
-    "countryName": "美国",
-    "countryFlag": "🇺🇸",
+    "id": 123,
+    "userId": 1,
+    "countryId": 1,
     "planType": "STUDY",
-    "subType": "master",
     "targetDate": "2026-09-01",
     "currentStatus": {
       "education": "undergraduate",
@@ -1237,7 +1260,6 @@ status: 规划状态 (ACTIVE, COMPLETED, PAUSED, ARCHIVED)
     },
     "progress": 35,
     "status": "ACTIVE",
-    "daysUntilTarget": 678,
     "timeline": [
       {
         "stage": "语言考试",
@@ -1310,26 +1332,21 @@ status: 规划状态 (ACTIVE, COMPLETED, PAUSED, ARCHIVED)
         ]
       }
     ],
-    "statistics": {
-      "totalStages": 8,
-      "completedStages": 0,
-      "totalTasks": 48,
-      "completedTasks": 15,
-      "totalMaterials": 25,
-      "completedMaterials": 8,
-      "estimatedCost": {
-        "tuition": 45000,
-        "living": 18000,
-        "other": 5000,
-        "total": 68000,
-        "currency": "USD"
-      }
-    },
-    "createdAt": "2024-10-25T10:00:00Z",
-    "updatedAt": "2024-10-25T11:30:00Z"
+    "createdAt": "2024-10-25T10:00:00",
+    "updatedAt": "2024-10-25T11:30:00"
   }
 }
 ```
+
+**🔧 [已修正]**:
+- 所有ID改为数字类型
+- country改为countryId，移除countryName、countryFlag
+- 移除subType（可存在preferences JSONB中）
+- 移除daysUntilTarget（前端计算）
+- currentStatus和preferences保留（JSONB字段）
+- timeline保留（从plan_stages和plan_tasks关联查询）
+- 移除statistics对象（这些是动态计算的结果，不存在数据库中）
+- 时间格式去掉Z后缀
 
 ### 4.4 更新规划
 
@@ -1398,74 +1415,62 @@ status: 规划状态 (ACTIVE, COMPLETED, PAUSED, ARCHIVED)
   "data": {
     "required": [
       {
-        "id": "material-1",
+        "id": 1,
+        "planId": 123,
         "name": "护照",
         "category": "REQUIRED",
         "description": "有效期需超过6个月",
-        "requirements": [
-          "护照首页清晰扫描件",
-          "有效期至少剩余6个月",
-          "如有旧护照也需提供"
-        ],
-        "format": "PDF",
+        "requirements": "护照首页清晰扫描件\n有效期至少剩余6个月\n如有旧护照也需提供",
         "status": "COMPLETED",
-        "files": [
-          {
-            "id": "file-1",
-            "name": "passport.pdf",
-            "url": "https://cdn.goabroad.com/files/passport.pdf",
-            "size": 2048000,
-            "uploadedAt": "2024-10-20T10:00:00Z"
-          }
-        ],
-        "completedAt": "2024-10-20T10:00:00Z",
+        "displayOrder": 1,
         "dueDate": null,
-        "order": 1
+        "completedAt": "2024-10-20T10:00:00",
+        "createdAt": "2024-10-25T10:00:00",
+        "updatedAt": "2024-10-25T10:00:00"
       },
       {
-        "id": "material-2",
+        "id": 2,
+        "planId": 123,
         "name": "I-20表格",
         "category": "REQUIRED",
         "description": "学校发放的录取文件",
         "status": "NOT_STARTED",
-        "files": [],
+        "displayOrder": 2,
         "dueDate": "2026-05-01",
-        "reminders": [
-          {
-            "id": "reminder-2",
-            "time": "2026-04-24T09:00:00Z",
-            "message": "记得索要I-20表格"
-          }
-        ],
-        "order": 2
+        "completedAt": null,
+        "createdAt": "2024-10-25T10:00:00",
+        "updatedAt": "2024-10-25T10:00:00"
       }
     ],
     "supporting": [
       {
-        "id": "material-15",
+        "id": 15,
+        "planId": 123,
         "name": "存款证明",
         "category": "SUPPORTING",
         "description": "证明有足够资金支付学费和生活费",
-        "requirements": [
-          "金额需覆盖第一年所有费用",
-          "建议金额：60-80万人民币",
-          "需银行盖章",
-          "有效期3-6个月"
-        ],
+        "requirements": "金额需覆盖第一年所有费用\n建议金额：60-80万人民币\n需银行盖章\n有效期3-6个月",
         "status": "IN_PROGRESS",
-        "files": [],
-        "order": 1
+        "displayOrder": 1,
+        "dueDate": null,
+        "completedAt": null,
+        "createdAt": "2024-10-25T10:00:00",
+        "updatedAt": "2024-10-25T10:00:00"
       }
     ],
     "optional": [
       {
-        "id": "material-20",
+        "id": 20,
+        "planId": 123,
         "name": "获奖证书",
         "category": "OPTIONAL",
         "description": "各类竞赛、奖项证书",
         "status": "NOT_STARTED",
-        "files": [],
-        "order": 1
+        "displayOrder": 1,
+        "dueDate": null,
+        "completedAt": null,
+        "createdAt": "2024-10-25T10:00:00",
+        "updatedAt": "2024-10-25T10:00:00"
       }
     ],
     "summary": {
@@ -1489,6 +1494,17 @@ status: 规划状态 (ACTIVE, COMPLETED, PAUSED, ARCHIVED)
   }
 }
 ```
+
+**🔧 [已修正]**:
+- materialId改为数字类型
+- 添加planId字段（数据库外键）
+- requirements从数组改为文本（换行符分隔）
+- 移除format字段（数据库无此字段）
+- 移除files字段（文件应通过plan_material_files表关联查询）
+- 移除reminders（应通过单独的reminders表查询）
+- order改为displayOrder（与数据库字段一致）
+- 添加createdAt和updatedAt字段
+- 时间格式去掉Z后缀
 
 ### 4.8 更新材料状态
 
@@ -1525,17 +1541,28 @@ file: File（文件）
   "code": 200,
   "message": "文件上传成功",
   "data": {
-    "id": "file-2",
-    "materialId": "material-2",
-    "name": "i20.pdf",
-    "originalName": "I-20_Form.pdf",
-    "url": "https://cdn.goabroad.com/files/i20.pdf",
-    "size": 1024000,
-    "mimeType": "application/pdf",
-    "uploadedAt": "2024-10-25T15:00:00Z"
+    "id": 2,
+    "materialId": 2,
+    "fileName": "i20.pdf",
+    "originalFileName": "I-20_Form.pdf",
+    "filePath": "/files/2024/10/25/i20.pdf",
+    "fileSize": 1024000,
+    "fileType": "PDF",
+    "uploadedAt": "2024-10-25T15:00:00",
+    "createdAt": "2024-10-25T15:00:00"
   }
 }
 ```
+
+**🔧 [已修正]**: 
+- ID改为数字类型
+- name改为fileName
+- originalName改为originalFileName
+- url改为filePath（存储相对路径）
+- size改为fileSize
+- mimeType改为fileType（枚举类型）
+- 添加createdAt字段
+- 时间格式去掉Z后缀
 
 ### 4.10 删除材料文件
 
@@ -1610,26 +1637,22 @@ pageSize: 每页数量
   "data": {
     "items": [
       {
-        "id": "post-123",
+        "id": 123,
         "author": {
-          "id": "user-123",
+          "id": 1,
           "nickname": "GoAbroad小新",
-          "avatar": "https://cdn.goabroad.com/avatars/user-123.jpg",
-          "level": 5,
-          "badges": ["热心助人"]
+          "avatarUrl": "https://cdn.goabroad.com/avatars/1.jpg",
+          "level": 5
         },
         "contentType": "POST",
         "title": "美国F1签证面签经验分享",
-        "content": "今天刚刚通过面签，分享一下经验...",
-        "contentPreview": "今天刚刚通过面签，分享一下经验...",  // 前200字
+        "summary": "今天刚刚通过面签，分享一下经验...",
         "coverImage": "https://cdn.goabroad.com/posts/cover-123.jpg",
         "images": [
           "https://cdn.goabroad.com/posts/img1.jpg",
           "https://cdn.goabroad.com/posts/img2.jpg"
         ],
-        "tags": ["美国", "签证", "F1", "面签经验"],
-        "country": "US",
-        "stage": "签证办理",
+        "tags": "美国,签证,F1,面签经验",
         "likeCount": 125,
         "commentCount": 32,
         "collectCount": 85,
@@ -1638,43 +1661,59 @@ pageSize: 每页数量
         "isCollected": false,
         "isPinned": false,
         "isFeatured": true,
-        "createdAt": "2024-10-20T10:00:00Z",
-        "updatedAt": "2024-10-20T10:00:00Z"
+        "status": "PUBLISHED",
+        "createdAt": "2024-10-20T10:00:00",
+        "updatedAt": "2024-10-20T10:00:00"
       },
       {
-        "id": "post-124",
+        "id": 124,
         "author": {
-          "id": "user-124",
+          "id": 2,
           "nickname": "留学小白",
-          "avatar": "https://cdn.goabroad.com/avatars/user-124.jpg",
+          "avatarUrl": "https://cdn.goabroad.com/avatars/2.jpg",
           "level": 2
         },
         "contentType": "QUESTION",
         "title": "请问英国读研需要准备多少钱？",
-        "content": "打算明年去英国读研，不知道需要准备多少钱...",
-        "contentPreview": "打算明年去英国读研...",
-        "tags": ["英国", "留学", "费用"],
-        "country": "UK",
+        "summary": "打算明年去英国读研，不知道需要准备多少钱...",
+        "tags": "英国,留学,费用",
         "likeCount": 15,
         "commentCount": 8,
         "collectCount": 5,
         "viewCount": 280,
         "isLiked": false,
         "isCollected": false,
-        "hasAcceptedAnswer": false,
-        "createdAt": "2024-10-24T16:30:00Z"
+        "status": "PUBLISHED",
+        "createdAt": "2024-10-24T16:30:00",
+        "updatedAt": "2024-10-24T16:30:00"
       }
     ],
     "pagination": {
-      "page": 1,
+      "currentPage": 1,
       "pageSize": 20,
-      "total": 1520,
+      "totalItems": 1520,
       "totalPages": 76,
-      "hasMore": true
+      "hasNext": true,
+      "hasPrevious": false,
+      "isFirstPage": true,
+      "isLastPage": false
     }
   }
 }
 ```
+
+**🔧 [已修正]**:
+- 帖子ID和作者ID改为数字类型
+- avatar改为avatarUrl
+- 移除author.badges（需单独查询）
+- content和contentPreview合并为summary（列表只显示摘要）
+- 移除country和stage字段（数据库posts表无此字段，可从metadata JSONB获取）
+- tags从数组改为逗号分隔的字符串（与数据库VARCHAR类型一致）
+- 移除hasAcceptedAnswer（数据库无此字段）
+- 添加status字段（数据库有此字段）
+- 添加updatedAt字段
+- pagination改为统一格式
+- 时间格式去掉Z后缀
 
 ### 5.2 获取帖子详情
 
@@ -1689,63 +1728,52 @@ pageSize: 每页数量
   "code": 200,
   "message": "Success",
   "data": {
-    "id": "post-123",
+    "id": 123,
     "author": {
-      "id": "user-123",
+      "id": 1,
       "nickname": "GoAbroad小新",
-      "avatar": "https://cdn.goabroad.com/avatars/user-123.jpg",
+      "avatarUrl": "https://cdn.goabroad.com/avatars/1.jpg",
       "bio": "正在准备美国留学",
       "level": 5,
-      "badges": ["热心助人", "经验分享者"],
-      "stats": {
-        "postsCount": 25,
-        "followersCount": 120
-      },
+      "postCount": 25,
+      "followerCount": 120,
       "isFollowing": false
     },
     "contentType": "POST",
     "title": "美国F1签证面签经验分享",
-    "content": "# 前言\n\n今天刚刚通过面签...\n\n## 准备材料\n\n1. 护照\n2. I-20...",  // Markdown格式
+    "content": "# 前言\n\n今天刚刚通过面签...\n\n## 准备材料\n\n1. 护照\n2. I-20...",
     "status": "PUBLISHED",
     "coverImage": "https://cdn.goabroad.com/posts/cover-123.jpg",
     "images": [
-      {
-        "url": "https://cdn.goabroad.com/posts/img1.jpg",
-        "thumbnail": "https://cdn.goabroad.com/posts/img1_thumb.jpg",
-        "width": 1920,
-        "height": 1080
-      }
+      "https://cdn.goabroad.com/posts/img1.jpg",
+      "https://cdn.goabroad.com/posts/img2.jpg"
     ],
-    "videos": [],
-    "tags": ["美国", "签证", "F1", "面签经验"],
-    "country": "US",
-    "countryName": "美国",
-    "stage": "签证办理",
+    "tags": "美国,签证,F1,面签经验",
     "likeCount": 125,
     "commentCount": 32,
     "collectCount": 85,
-    "viewCount": 1521,  // 自动+1
+    "viewCount": 1521,
     "isLiked": false,
     "isCollected": false,
     "isPinned": false,
     "isFeatured": true,
-    "createdAt": "2024-10-20T10:00:00Z",
-    "updatedAt": "2024-10-20T10:00:00Z",
-    
-    // 相关推荐
-    "relatedPosts": [
-      {
-        "id": "post-456",
-        "title": "F1签证材料清单",
-        "author": { /* 简要信息 */ },
-        "coverImage": "https://...",
-        "viewCount": 850,
-        "likeCount": 45
-      }
-    ]
+    "createdAt": "2024-10-20T10:00:00",
+    "updatedAt": "2024-10-20T10:00:00"
   }
 }
 ```
+
+**🔧 [已修正]**:
+- 帖子ID和作者ID改为数字类型
+- avatar改为avatarUrl
+- 移除author.badges和author.stats对象
+- 直接使用postCount、followerCount（与数据库字段一致）
+- images从对象数组简化为字符串数组（数据库存储为TEXT[]）
+- 移除videos（数据库posts表无此字段，可从metadata JSONB获取）
+- tags改为逗号分隔字符串
+- 移除country、countryName、stage（从metadata JSONB获取）
+- 移除relatedPosts（应通过单独接口查询）
+- 时间格式去掉Z后缀
 
 ### 5.3 发布帖子
 
@@ -1757,21 +1785,25 @@ pageSize: 每页数量
 
 ```json
 {
-  "contentType": "POST",  // POST, QUESTION, TIMELINE, VLOG
+  "contentType": "POST",
   "title": "美国F1签证面签经验分享",
-  "content": "# 前言\n\n今天刚刚通过面签...",  // Markdown格式
-  "status": "PUBLISHED",  // DRAFT, PUBLISHED
+  "content": "# 前言\n\n今天刚刚通过面签...",
+  "summary": "今天刚刚通过面签，分享一下经验...",
+  "status": "PUBLISHED",
   "coverImage": "https://cdn.goabroad.com/posts/cover-123.jpg",
   "images": [
     "https://cdn.goabroad.com/posts/img1.jpg",
     "https://cdn.goabroad.com/posts/img2.jpg"
   ],
-  "videos": [],
-  "tags": ["美国", "签证", "F1", "面签经验"],
-  "country": "US",
-  "stage": "签证办理"
+  "tags": "美国,签证,F1,面签经验"
 }
 ```
+
+**🔧 [已修正]**: 
+- 添加summary字段（数据库有此字段，用于列表展示）
+- 移除videos（数据库posts表无此字段）
+- tags改为逗号分隔字符串
+- 移除country和stage（可选地存在metadata JSONB中）
 
 #### 响应示例
 
@@ -1780,24 +1812,31 @@ pageSize: 每页数量
   "code": 200,
   "message": "发布成功",
   "data": {
-    "id": "post-125",
-    "author": { /* 当前用户信息 */ },
+    "id": 125,
     "contentType": "POST",
     "title": "美国F1签证面签经验分享",
-    "content": "...",
+    "summary": "今天刚刚通过面签，分享一下经验...",
+    "content": "# 前言\n\n今天刚刚通过面签...",
     "status": "PUBLISHED",
-    "coverImage": "...",
-    "images": [],
-    "tags": ["美国", "签证", "F1"],
-    "country": "US",
+    "coverImage": "https://cdn.goabroad.com/posts/cover-123.jpg",
+    "images": [
+      "https://cdn.goabroad.com/posts/img1.jpg",
+      "https://cdn.goabroad.com/posts/img2.jpg"
+    ],
+    "tags": "美国,签证,F1",
     "likeCount": 0,
     "commentCount": 0,
     "collectCount": 0,
     "viewCount": 0,
-    "createdAt": "2024-10-25T16:00:00Z"
+    "isPinned": false,
+    "isFeatured": false,
+    "createdAt": "2024-10-25T16:00:00",
+    "updatedAt": "2024-10-25T16:00:00"
   }
 }
 ```
+
+**🔧 [已修正]**: ID改为数字类型，移除author对象，添加summary，tags改为字符串，移除country，添加完整字段
 
 ### 5.4 编辑帖子
 
@@ -1883,55 +1922,70 @@ pageSize: 每页数量
   "data": {
     "items": [
       {
-        "id": "comment-123",
-        "postId": "post-123",
+        "id": 123,
+        "postId": 123,
         "author": {
-          "id": "user-456",
+          "id": 456,
           "nickname": "热心网友",
-          "avatar": "https://cdn.goabroad.com/avatars/user-456.jpg",
+          "avatarUrl": "https://cdn.goabroad.com/avatars/456.jpg",
           "level": 3
         },
         "content": "非常有用的分享，感谢！",
-        "images": [],
         "likeCount": 15,
         "replyCount": 2,
         "isLiked": false,
-        "isAuthor": false,  // 是否是楼主
-        "parentId": null,   // 父评论ID（一级评论为null）
+        "parentId": null,
+        "status": "APPROVED",
         "replies": [
           {
-            "id": "comment-124",
+            "id": 124,
+            "postId": 123,
             "author": {
-              "id": "user-123",
+              "id": 1,
               "nickname": "GoAbroad小新",
-              "avatar": "...",
+              "avatarUrl": "https://cdn.goabroad.com/avatars/1.jpg",
               "level": 5
             },
             "content": "不客气，祝你好运！",
             "likeCount": 5,
             "isLiked": false,
-            "isAuthor": true,
-            "parentId": "comment-123",
-            "replyTo": {
-              "id": "user-456",
-              "nickname": "热心网友"
-            },
-            "createdAt": "2024-10-20T11:00:00Z"
+            "parentId": 123,
+            "replyToUserId": 456,
+            "status": "APPROVED",
+            "createdAt": "2024-10-20T11:00:00",
+            "updatedAt": "2024-10-20T11:00:00"
           }
         ],
-        "createdAt": "2024-10-20T10:30:00Z"
+        "createdAt": "2024-10-20T10:30:00",
+        "updatedAt": "2024-10-20T10:30:00"
       }
     ],
     "pagination": {
-      "page": 1,
+      "currentPage": 1,
       "pageSize": 20,
-      "total": 32,
+      "totalItems": 32,
       "totalPages": 2,
-      "hasMore": true
+      "hasNext": true,
+      "hasPrevious": false,
+      "isFirstPage": true,
+      "isLastPage": false
     }
   }
 }
 ```
+
+**🔧 [已修正]**:
+- 所有ID改为数字类型（commentId, postId, userId）
+- avatar改为avatarUrl
+- 移除images字段（数据库comments表无此字段）
+- 移除isAuthor字段（前端可通过比较authorId判断）
+- parentId统一为评论ID（数据库设计）
+- 添加replyToUserId字段（数据库有此字段）
+- 移除replyTo对象（可通过replyToUserId查询）
+- 添加status字段（APPROVED/PENDING/REJECTED）
+- 添加updatedAt字段
+- pagination改为统一格式
+- 时间格式去掉Z后缀
 
 ### 5.9 发表评论
 
@@ -1944,11 +1998,12 @@ pageSize: 每页数量
 ```json
 {
   "content": "非常有用的分享，感谢！",
-  "images": [],
-  "parentId": null,          // 回复评论时填写父评论ID
-  "replyToUserId": null      // 回复用户ID
+  "parentId": null,
+  "replyToUserId": null
 }
 ```
+
+**🔧 [已修正]**: 移除images字段（数据库comments表无此字段）
 
 #### 响应示例
 
@@ -1957,18 +2012,22 @@ pageSize: 每页数量
   "code": 200,
   "message": "评论成功",
   "data": {
-    "id": "comment-125",
-    "postId": "post-123",
-    "author": { /* 当前用户信息 */ },
+    "id": 125,
+    "postId": 123,
+    "userId": 1,
     "content": "非常有用的分享，感谢！",
     "likeCount": 0,
     "replyCount": 0,
-    "isLiked": false,
     "parentId": null,
-    "createdAt": "2024-10-25T16:30:00Z"
+    "replyToUserId": null,
+    "status": "APPROVED",
+    "createdAt": "2024-10-25T16:30:00",
+    "updatedAt": "2024-10-25T16:30:00"
   }
 }
 ```
+
+**🔧 [已修正]**: ID改为数字，移除author对象改为userId，移除isLiked，添加status和updatedAt
 
 ### 5.10 删除评论
 
@@ -2472,94 +2531,95 @@ pageSize: 每页数量
   "data": {
     "items": [
       {
-        "id": "notif-123",
-        "type": "LIKE",  // SYSTEM, LIKE, COMMENT, FOLLOW, REPLY, MENTION, POLICY_UPDATE
+        "id": 123,
+        "userId": 1,
+        "type": "LIKE",
         "title": "有人点赞了你的帖子",
         "content": "用户 GoAbroad小新 点赞了你的帖子《美国F1签证面签经验分享》",
-        "avatar": "https://cdn.goabroad.com/avatars/user-123.jpg",
         "data": {
-          "userId": "user-123",
+          "userId": 2,
           "userName": "GoAbroad小新",
-          "postId": "post-123",
+          "postId": 123,
           "postTitle": "美国F1签证面签经验分享"
         },
-        "actionUrl": "/community/post/post-123",
+        "targetType": "POST",
+        "targetId": 123,
         "isRead": false,
-        "createdAt": "2024-10-25T10:30:00Z"
+        "createdAt": "2024-10-25T10:30:00"
       },
       {
-        "id": "notif-124",
+        "id": 124,
+        "userId": 1,
         "type": "COMMENT",
         "title": "有人评论了你的帖子",
         "content": "用户 留学小白 评论了你的帖子：非常有用的分享，感谢！",
-        "avatar": "https://cdn.goabroad.com/avatars/user-456.jpg",
         "data": {
-          "userId": "user-456",
+          "userId": 456,
           "userName": "留学小白",
-          "postId": "post-123",
-          "commentId": "comment-125",
+          "postId": 123,
+          "commentId": 125,
           "commentContent": "非常有用的分享，感谢！"
         },
-        "actionUrl": "/community/post/post-123#comment-125",
+        "targetType": "POST",
+        "targetId": 123,
         "isRead": false,
-        "createdAt": "2024-10-25T09:15:00Z"
+        "createdAt": "2024-10-25T09:15:00"
       },
       {
-        "id": "notif-125",
+        "id": 125,
+        "userId": 1,
         "type": "FOLLOW",
         "title": "有人关注了你",
         "content": "用户 准备留学ing 关注了你",
-        "avatar": "https://cdn.goabroad.com/avatars/user-789.jpg",
         "data": {
-          "userId": "user-789",
+          "userId": 789,
           "userName": "准备留学ing"
         },
-        "actionUrl": "/profile/user-789",
+        "targetType": "USER",
+        "targetId": 789,
         "isRead": true,
-        "createdAt": "2024-10-24T16:20:00Z"
+        "createdAt": "2024-10-24T16:20:00"
       },
       {
-        "id": "notif-126",
-        "type": "REPLY",
-        "title": "收到回复",
-        "content": "用户 热心网友 回复了你的评论：我也遇到了同样的问题",
-        "avatar": "https://cdn.goabroad.com/avatars/user-456.jpg",
-        "data": {
-          "userId": "user-456",
-          "userName": "热心网友",
-          "postId": "post-123",
-          "commentId": "comment-126"
-        },
-        "actionUrl": "/community/post/post-123#comment-126",
-        "isRead": false,
-        "createdAt": "2024-10-25T09:00:00Z"
-      },
-      {
-        "id": "notif-127",
+        "id": 126,
+        "userId": 1,
         "type": "SYSTEM",
         "title": "系统通知",
         "content": "GoAbroad 2.0 版本已发布，快来体验新功能！",
-        "icon": "🎉",
         "data": {
           "version": "2.0.0",
           "updateUrl": "https://goabroad.com/updates"
         },
-        "actionUrl": "/settings/about",
+        "targetType": null,
+        "targetId": null,
         "isRead": true,
-        "createdAt": "2024-10-20T10:00:00Z"
+        "createdAt": "2024-10-20T10:00:00"
       }
     ],
     "pagination": {
-      "page": 1,
+      "currentPage": 1,
       "pageSize": 20,
-      "total": 58,
+      "totalItems": 58,
       "totalPages": 3,
-      "hasMore": true
+      "hasNext": true,
+      "hasPrevious": false,
+      "isFirstPage": true,
+      "isLastPage": false
     },
     "unreadCount": 15
   }
 }
 ```
+
+**🔧 [已修正]**:
+- 所有ID改为数字类型（notificationId, userId, targetId等）
+- 添加userId字段（通知接收者ID，数据库有此字段）
+- 移除avatar和icon字段（数据库无此字段，头像从用户信息获取）
+- 移除actionUrl（前端根据targetType和targetId构建）
+- 添加targetType和targetId字段（数据库有这些字段）
+- data中的ID也改为数字类型
+- pagination改为统一格式
+- 时间格式去掉Z后缀
 
 ### 7.2 获取未读通知数量
 
@@ -2762,19 +2822,30 @@ type: avatar | post_image | material | attachment  # 文件类型
   "code": 200,
   "message": "上传成功",
   "data": {
-    "id": "file-123",
-    "url": "https://cdn.goabroad.com/uploads/2024/10/25/file-123.jpg",
-    "thumbnailUrl": "https://cdn.goabroad.com/uploads/2024/10/25/file-123_thumb.jpg",
-    "filename": "image.jpg",
-    "originalName": "我的照片.jpg",
-    "size": 2048000,
+    "id": 123,
+    "fileName": "image.jpg",
+    "originalFileName": "我的照片.jpg",
+    "filePath": "/uploads/2024/10/25/image.jpg",
+    "fileSize": 2048000,
+    "fileType": "IMAGE",
     "mimeType": "image/jpeg",
-    "width": 1920,
-    "height": 1080,
-    "uploadedAt": "2024-10-25T18:00:00Z"
+    "uploadedAt": "2024-10-25T18:00:00",
+    "createdAt": "2024-10-25T18:00:00"
   }
 }
 ```
+
+**🔧 [已修正]**:
+- id改为数字类型
+- url改为filePath（存储相对路径）
+- 移除thumbnailUrl（缩略图通过其他方式处理）
+- filename改为fileName
+- originalName改为originalFileName
+- size改为fileSize
+- 添加fileType枚举字段
+- 移除width和height（可存在metadata JSONB中）
+- 添加createdAt字段
+- 时间格式去掉Z后缀
 
 ### 8.2 批量上传
 
@@ -2802,24 +2873,26 @@ type: post_image | material | attachment
     "failed": 0,
     "files": [
       {
-        "id": "file-123",
-        "url": "https://cdn.goabroad.com/uploads/file-123.jpg",
-        "thumbnailUrl": "https://cdn.goabroad.com/uploads/file-123_thumb.jpg",
-        "filename": "image1.jpg",
-        "size": 2048000
+        "id": 123,
+        "fileName": "image1.jpg",
+        "filePath": "/uploads/2024/10/25/image1.jpg",
+        "fileSize": 2048000,
+        "fileType": "IMAGE"
       },
       {
-        "id": "file-124",
-        "url": "https://cdn.goabroad.com/uploads/file-124.jpg",
-        "thumbnailUrl": "https://cdn.goabroad.com/uploads/file-124_thumb.jpg",
-        "filename": "image2.jpg",
-        "size": 1536000
+        "id": 124,
+        "fileName": "image2.jpg",
+        "filePath": "/uploads/2024/10/25/image2.jpg",
+        "fileSize": 1536000,
+        "fileType": "IMAGE"
       }
     ],
-    "uploadedAt": "2024-10-25T18:00:00Z"
+    "uploadedAt": "2024-10-25T18:00:00"
   }
 }
 ```
+
+**🔧 [已修正]**: ID改为数字，字段名改为与数据库一致，移除thumbnailUrl，时间格式去掉Z后缀
 
 ### 8.3 获取上传凭证（七牛云/阿里云OSS）
 
@@ -2897,56 +2970,59 @@ pageSize: 每页数量
     "results": {
       "countries": [
         {
-          "id": "country-us",
+          "id": 1,
           "type": "country",
           "nameZh": "美国",
           "nameEn": "United States",
-          "flagEmoji": "🇺🇸",
-          "summary": "教育资源丰富..."
+          "flagEmoji": "🇺🇸"
         }
       ],
       "posts": [
         {
-          "id": "post-123",
+          "id": 123,
           "type": "post",
           "title": "美国F1签证面签经验分享",
-          "contentPreview": "今天刚刚通过面签...",
-          "author": { /* 简要信息 */ },
+          "summary": "今天刚刚通过面签...",
+          "authorId": 1,
           "likeCount": 125,
           "viewCount": 1520,
-          "createdAt": "2024-10-20T10:00:00Z"
+          "createdAt": "2024-10-20T10:00:00"
         }
       ],
       "users": [
         {
-          "id": "user-123",
+          "id": 123,
           "type": "user",
           "nickname": "美国留学小助手",
-          "avatar": "...",
+          "avatarUrl": "...",
           "bio": "帮助大家实现美国留学梦",
-          "followersCount": 1250
-        }
-      ],
-      "schools": [
-        {
-          "id": "school-123",
-          "type": "school",
-          "name": "MIT",
-          "nameZh": "麻省理工学院",
-          "logo": "...",
-          "ranking": 1
+          "followerCount": 1250
         }
       ]
     },
     "pagination": {
-      "page": 1,
+      "currentPage": 1,
       "pageSize": 20,
-      "total": 158,
-      "hasMore": true
+      "totalItems": 158,
+      "totalPages": 8,
+      "hasNext": true,
+      "hasPrevious": false,
+      "isFirstPage": true,
+      "isLastPage": false
     }
   }
 }
 ```
+
+**🔧 [已修正]**:
+- 所有ID改为数字类型
+- contentPreview改为summary
+- avatar改为avatarUrl
+- author对象简化为authorId
+- followersCount改为followerCount
+- 移除schools结果（数据库未实现schools表）
+- pagination改为统一格式
+- 时间格式去掉Z后缀
 
 ### 9.2 搜索建议
 

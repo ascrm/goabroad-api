@@ -1,8 +1,8 @@
 package com.goabroad.service.file.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import com.goabroad.model.enums.FileType;
-import com.goabroad.model.vo.FileUploadVo;
+import com.goabroad.model.file.enums.FileType;
+import com.goabroad.model.file.vo.FileUploadVo;
 import com.goabroad.service.file.service.FileStorageService;
 import com.goabroad.service.file.tools.FilePathBuilder;
 import com.goabroad.service.file.tools.FileValidator;

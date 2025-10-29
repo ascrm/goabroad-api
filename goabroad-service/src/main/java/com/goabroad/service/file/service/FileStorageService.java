@@ -1,8 +1,8 @@
 package com.goabroad.service.file.service;
 
 import org.springframework.web.multipart.MultipartFile;
-import com.goabroad.model.vo.FileUploadVo;
-import com.goabroad.model.enums.FileType;
+import com.goabroad.model.file.vo.FileUploadVo;
+import com.goabroad.model.file.enums.FileType;
 
 /**
  * 文件存储服务接口

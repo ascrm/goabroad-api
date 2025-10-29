@@ -561,7 +561,7 @@ com.goabroad.{module}.{layer}.{business}
 
 示例:
 - com.goabroad.common.util.DateUtil
-- com.goabroad.model.entity.User
+- com.goabroad.model.user.entity.User
 - com.goabroad.service.user.UserService
 - com.goabroad.web.controller.UserController
 ```

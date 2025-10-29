@@ -2,8 +2,8 @@ package com.goabroad.web.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.goabroad.common.pojo.Result;
-import com.goabroad.model.dto.CreatePostDto;
-import com.goabroad.model.vo.PostDetailVo;
+import com.goabroad.model.community.post.dto.CreatePostDto;
+import com.goabroad.model.community.post.vo.PostDetailVo;
 import com.goabroad.service.community.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -2,7 +2,7 @@ package com.goabroad.service.file.tools;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
-import com.goabroad.model.enums.FileType;
+import com.goabroad.model.file.enums.FileType;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;

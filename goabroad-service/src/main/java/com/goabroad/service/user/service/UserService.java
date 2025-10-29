@@ -1,8 +1,12 @@
 package com.goabroad.service.user.service;
 
 import com.goabroad.common.pojo.PageResult;
-import com.goabroad.model.dto.UpdateUserProfileDto;
-import com.goabroad.model.vo.*;
+import com.goabroad.model.community.post.vo.PostSimpleVo;
+import com.goabroad.model.user.vo.FollowVo;
+import com.goabroad.model.user.dto.UpdateUserProfileDto;
+import com.goabroad.model.user.vo.UserProfileVo;
+import com.goabroad.model.user.vo.UserPublicVo;
+import com.goabroad.model.user.vo.UserSimpleVo;
 import org.springframework.data.domain.Pageable;
 
 /**

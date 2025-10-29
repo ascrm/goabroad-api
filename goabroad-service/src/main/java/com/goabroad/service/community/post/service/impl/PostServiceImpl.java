@@ -1,15 +1,19 @@
 package com.goabroad.service.community.post.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
 import com.goabroad.common.exception.BusinessException;
 import com.goabroad.common.pojo.ResultCode;
-import com.goabroad.model.dto.CreatePostDto;
-import com.goabroad.model.entity.Post;
-import com.goabroad.model.entity.User;
-import com.goabroad.model.enums.PostStatus;
-import com.goabroad.model.vo.PostDetailVo;
+import com.goabroad.model.community.post.dto.CreatePostDto;
+import com.goabroad.model.community.post.entity.Post;
+import com.goabroad.model.community.post.entity.PostTag;
+import com.goabroad.model.community.tag.entity.Tag;
+import com.goabroad.model.user.entity.User;
+import com.goabroad.model.community.post.enums.PostStatus;
+import com.goabroad.model.community.post.vo.PostDetailVo;
 import com.goabroad.service.community.post.repository.PostRepository;
+import com.goabroad.service.community.post.repository.PostTagRepository;
+import com.goabroad.service.community.post.repository.TagRepository;
 import com.goabroad.service.community.post.service.PostService;
 import com.goabroad.service.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +39,8 @@ public class PostServiceImpl implements PostService {
     
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final TagRepository tagRepository;
+    private final PostTagRepository postTagRepository;
     
     /**
      * 发布帖子
@@ -64,7 +70,6 @@ public class PostServiceImpl implements PostService {
                 .status(dto.getStatus() != null ? dto.getStatus() : PostStatus.PUBLISHED)
                 .coverImage(dto.getCoverImage())
                 .mediaUrls(mediaUrls.isEmpty() ? null : mediaUrls)
-                .tagsJson(dto.getTags() != null && !dto.getTags().isEmpty() ? JSONUtil.toJsonStr(dto.getTags()) : null)
                 .countryCode(dto.getCountry())
                 .category(dto.getStage())
                 .publishedAt(dto.getStatus() == PostStatus.PUBLISHED ? LocalDateTime.now() : null)
@@ -76,7 +81,13 @@ public class PostServiceImpl implements PostService {
         // 4. 保存帖子
         post = postRepository.save(post);
         
-        // 5. 如果是已发布状态，更新用户的发帖数
+        // 5. 处理标签
+        if (CollUtil.isNotEmpty(dto.getTags())) {
+            List<Tag> savedTags = processAndSaveTags(dto.getTags(), post.getId());
+            log.info("帖子{}关联了{}个标签", post.getId(), savedTags.size());
+        }
+        
+        // 6. 如果是已发布状态，更新用户的发帖数
         if (post.getStatus() == PostStatus.PUBLISHED) {
             user.setPostCount(user.getPostCount() + 1);
             userRepository.save(user);
@@ -84,8 +95,72 @@ public class PostServiceImpl implements PostService {
         
         log.info("用户{}发布了帖子，帖子ID: {}, 标题: {}", userId, post.getId(), post.getTitle());
         
-        // 6. 转换为VO并返回
+        // 7. 转换为VO并返回
         return convertToPostDetailVo(post, user);
+    }
+    
+    /**
+     * 处理并保存标签
+     * 
+     * @param tagNames 标签名称列表
+     * @param postId 帖子ID
+     * @return 保存后的标签列表
+     */
+    private List<Tag> processAndSaveTags(List<String> tagNames, Long postId) {
+        List<Tag> savedTags = new ArrayList<>();
+        
+        for (String tagName : tagNames) {
+            // 跳过空标签
+            if (StrUtil.isBlank(tagName)) {
+                continue;
+            }
+            
+            // 清理标签名称（使用final变量）
+            final String cleanedTagName = tagName.trim();
+            
+            // 查找或创建标签
+            Tag tag = tagRepository.findByNameAndDeleted(cleanedTagName, false)
+                    .map(existingTag -> {
+                        // 标签已存在，增加帖子计数
+                        existingTag.setPostCount(existingTag.getPostCount() + 1);
+                        return tagRepository.save(existingTag);
+                    })
+                    .orElseGet(() -> {
+                        // 创建新标签
+                        Tag newTag = Tag.builder()
+                                .name(cleanedTagName)
+                                .slug(generateSlug(cleanedTagName))
+                                .postCount(1)
+                                .build();
+                        newTag.setDeleted(false);
+                        return tagRepository.save(newTag);
+                    });
+            
+            // 创建帖子-标签关联
+            PostTag postTag = PostTag.builder()
+                    .postId(postId)
+                    .tagId(tag.getId())
+                    .build();
+            postTag.setDeleted(false);
+            postTagRepository.save(postTag);
+            
+            savedTags.add(tag);
+        }
+        
+        return savedTags;
+    }
+    
+    /**
+     * 生成标签的slug（URL友好标识）
+     * 
+     * @param tagName 标签名称
+     * @return slug
+     */
+    private String generateSlug(String tagName) {
+        // 简单实现：转小写并替换空格为连字符
+        return tagName.toLowerCase()
+                .replaceAll("\\s+", "-")
+                .replaceAll("[^a-z0-9\\u4e00-\\u9fa5-]", "");
     }
     
     /**
@@ -111,10 +186,6 @@ public class PostServiceImpl implements PostService {
         List<String> images = new ArrayList<>(mediaUrls);
         List<String> videos = new ArrayList<>();
         
-        List<String> tags = StrUtil.isNotBlank(post.getTagsJson()) 
-                ? JSONUtil.toList(post.getTagsJson(), String.class) 
-                : new ArrayList<>();
-        
         // 构建帖子详情VO
         return PostDetailVo.builder()
                 .id(post.getId())
@@ -126,7 +197,6 @@ public class PostServiceImpl implements PostService {
                 .coverImage(post.getCoverImage())
                 .images(images)
                 .videos(videos)
-                .tags(tags)
                 .country(post.getCountryCode())
                 .countryName(getCountryName(post.getCountryCode()))
                 .stage(post.getCategory())

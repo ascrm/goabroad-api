@@ -1,6 +1,6 @@
 package com.goabroad.service.user.repository;
 
-import com.goabroad.model.entity.UserPreferences;
+import com.goabroad.model.user.entity.UserPreferences;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

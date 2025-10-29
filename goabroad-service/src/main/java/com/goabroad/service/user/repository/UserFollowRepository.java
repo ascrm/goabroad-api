@@ -1,6 +1,6 @@
 package com.goabroad.service.user.repository;
 
-import com.goabroad.model.entity.UserFollow;
+import com.goabroad.model.user.entity.UserFollow;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

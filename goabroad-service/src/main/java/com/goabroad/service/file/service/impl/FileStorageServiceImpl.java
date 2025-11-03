@@ -5,6 +5,7 @@ import com.goabroad.model.file.enums.FileType;
 import com.goabroad.model.file.vo.FileUploadVo;
 import com.goabroad.service.file.service.FileStorageService;
 import com.goabroad.service.file.tools.FilePathBuilder;
+import com.goabroad.service.file.tools.FileUploadHelper;
 import com.goabroad.service.file.tools.FileValidator;
 import com.goabroad.service.file.tools.ImageProcessor;
 import com.goabroad.service.file.tools.MinioOperationHelper;
@@ -32,6 +33,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     private final FileValidator fileValidator;
     private final ImageProcessor imageProcessor;
     private final FilePathBuilder pathBuilder;
+    private final FileUploadHelper uploadHelper;
 
     @SneakyThrows
     @Override
@@ -63,9 +65,8 @@ public class FileStorageServiceImpl implements FileStorageService {
                 .build();
 
         // 5. 处理图片特殊逻辑
-        if (fileValidator.isImage(file.getContentType())) {
-            processImageMetadata(file, fileType, objectName, vo);
-        }
+        uploadHelper.processImageMetadata(file, fileType, objectName, vo);
+        
         return vo;
     }
     
@@ -85,43 +86,6 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     public String generateUniqueFilename(String originalFilename) {
         return pathBuilder.generateUniqueFilename(originalFilename);
-    }
-    
-    /**
-     * 处理图片元数据（尺寸、缩略图等）
-     */
-    private void processImageMetadata(MultipartFile file, FileType fileType, String objectName, FileUploadVo vo) {
-        // 获取图片尺寸
-        ImageProcessor.ImageDimension dimension = imageProcessor.getImageDimension(file);
-        if (dimension != null) {
-            vo.setWidth(dimension.width());
-            vo.setHeight(dimension.height());
-        }
-        
-        // 生成缩略图（仅对头像和帖子图片）
-        if (fileType == FileType.AVATAR || fileType == FileType.POST_IMAGE) {
-            String thumbnailUrl = uploadThumbnail(file, objectName);
-            vo.setThumbnailUrl(thumbnailUrl);
-        }
-    }
-    
-    /**
-     * 上传缩略图
-     */
-    private String uploadThumbnail(MultipartFile file, String originalObjectName) {
-        ImageProcessor.ThumbnailData thumbnail = imageProcessor.generateThumbnail(file);
-        if (thumbnail == null) {
-            return null;
-        }
-        
-        String thumbnailObjectName = imageProcessor.buildThumbnailObjectName(originalObjectName);
-        
-        return minioHelper.uploadFile(
-                thumbnailObjectName,
-                imageProcessor.toInputStream(thumbnail.data()),
-                thumbnail.data().length,
-                thumbnail.contentType()
-        );
     }
 }
 

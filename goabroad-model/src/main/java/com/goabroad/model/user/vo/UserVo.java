@@ -53,14 +53,11 @@ public class UserVo implements Serializable {
     @Schema(description = "性别", example = "MALE")
     private Gender gender;
     
-    @Schema(description = "用户等级", example = "5")
-    private Short level;
+    @Schema(description = "出生日期", example = "1999-05-20")
+    private java.time.LocalDate birthDate;
     
-    @Schema(description = "积分", example = "1500")
-    private Integer points;
-    
-    @Schema(description = "经验值", example = "8600")
-    private Integer exp;
+    @Schema(description = "所在地", example = "北京市")
+    private String location;
     
     @Schema(description = "发帖数", example = "42")
     private Integer postCount;
@@ -79,12 +76,6 @@ public class UserVo implements Serializable {
     
     @Schema(description = "手机是否验证", example = "true")
     private Boolean phoneVerified;
-    
-    @Schema(description = "是否会员", example = "false")
-    private Boolean isVip;
-    
-    @Schema(description = "会员到期时间", example = "2025-12-31T23:59:59")
-    private LocalDateTime vipExpireAt;
     
     @Schema(description = "最后登录时间", example = "2024-10-25T10:30:00")
     private LocalDateTime lastLoginAt;

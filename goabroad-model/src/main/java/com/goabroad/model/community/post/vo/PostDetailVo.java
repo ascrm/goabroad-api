@@ -32,76 +32,70 @@ public class PostDetailVo {
     private Long id;
     
     /**
-     * 作者信息
+     * 作者ID
      */
-    @Schema(description = "作者信息")
-    private AuthorVo author;
+    @Schema(description = "作者用户ID", example = "456")
+    private Long authorId;
     
     /**
      * 内容类型
      */
-    @Schema(description = "内容类型", example = "POST")
+    @Schema(description = "内容类型", example = "GUIDE")
     private ContentType contentType;
     
     /**
      * 标题
      */
-    @Schema(description = "标题", example = "美国F1签证面签经验分享")
+    @Schema(description = "标题", example = "美国F1签证面签完整攻略")
     private String title;
     
     /**
      * 内容
      */
-    @Schema(description = "内容（Markdown格式）")
+    @Schema(description = "正文内容（Markdown格式）")
     private String content;
     
     /**
-     * 状态
+     * 摘要
      */
-    @Schema(description = "状态", example = "PUBLISHED")
-    private PostStatus status;
+    @Schema(description = "摘要", example = "F1签证面签通过，分享准备材料和面试技巧")
+    private String summary;
+    
+    /**
+     * 分类
+     */
+    @Schema(description = "分类", example = "签证")
+    private String category;
     
     /**
      * 封面图片URL
      */
-    @Schema(description = "封面图片URL")
+    @Schema(description = "封面图URL", example = "https://cdn.goabroad.com/posts/cover-123.jpg")
     private String coverImage;
     
     /**
-     * 图片URL列表
+     * 媒体文件URL数组（图片/视频）
      */
-    @Schema(description = "图片URL列表")
-    private List<String> images;
+    @Schema(description = "图片/视频 URL 数组")
+    private List<String> mediaUrls;
     
     /**
-     * 视频URL列表
+     * 发布状态
      */
-    @Schema(description = "视频URL列表")
-    private List<String> videos;
+    @Schema(description = "发布状态", example = "PUBLISHED")
+    private PostStatus status;
     
     /**
-     * 标签列表
+     * 是否允许评论
      */
-    @Schema(description = "标签列表")
-    private List<String> tags;
+    @Schema(description = "是否允许评论", example = "true")
+    private Boolean allowComment;
     
     /**
-     * 国家代码
+     * 浏览量
      */
-    @Schema(description = "国家代码", example = "US")
-    private String country;
-    
-    /**
-     * 国家名称
-     */
-    @Schema(description = "国家名称", example = "美国")
-    private String countryName;
-    
-    /**
-     * 阶段标签
-     */
-    @Schema(description = "阶段标签", example = "签证办理")
-    private String stage;
+    @Schema(description = "浏览量", example = "0")
+    private Integer viewCount;
     
     /**
      * 点赞数
@@ -122,80 +116,45 @@ public class PostDetailVo {
     private Integer collectCount;
     
     /**
-     * 浏览数
+     * 分享数
      */
-    @Schema(description = "浏览数", example = "0")
-    private Integer viewCount;
+    @Schema(description = "分享数", example = "0")
+    private Integer shareCount;
     
     /**
-     * 是否点赞
+     * 是否精选（管理员设置）
      */
-    @Schema(description = "当前用户是否点赞", example = "false")
-    private Boolean isLiked;
+    @Schema(description = "是否精选（管理员设置）", example = "false")
+    private Boolean isFeatured;
     
     /**
-     * 是否收藏
+     * 是否置顶（管理员设置）
      */
-    @Schema(description = "当前用户是否收藏", example = "false")
-    private Boolean isCollected;
-    
-    /**
-     * 是否置顶
-     */
-    @Schema(description = "是否置顶", example = "false")
+    @Schema(description = "是否置顶（管理员设置）", example = "false")
     private Boolean isPinned;
     
     /**
-     * 是否精选
+     * 是否热门（系统计算）
      */
-    @Schema(description = "是否精选", example = "false")
-    private Boolean isFeatured;
+    @Schema(description = "是否热门（系统计算）", example = "false")
+    private Boolean isHot;
     
     /**
      * 创建时间
      */
-    @Schema(description = "创建时间")
+    @Schema(description = "创建时间", example = "2024-11-03T10:00:00")
     private LocalDateTime createdAt;
     
     /**
      * 更新时间
      */
-    @Schema(description = "更新时间")
+    @Schema(description = "更新时间", example = "2024-11-03T10:00:00")
     private LocalDateTime updatedAt;
     
     /**
-     * 作者简要信息
+     * 发布时间
      */
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Schema(description = "作者信息")
-    public static class AuthorVo {
-        
-        @Schema(description = "用户ID", example = "1")
-        private Long id;
-        
-        @Schema(description = "用户名", example = "user_123")
-        private String username;
-        
-        @Schema(description = "昵称", example = "GoAbroad小新")
-        private String nickname;
-        
-        @Schema(description = "头像URL")
-        private String avatarUrl;
-        
-        @Schema(description = "个人简介")
-        private String bio;
-        
-        @Schema(description = "用户等级", example = "5")
-        private Short level;
-        
-        @Schema(description = "徽章列表")
-        private List<String> badges;
-        
-        @Schema(description = "是否关注该作者", example = "false")
-        private Boolean isFollowing;
-    }
+    @Schema(description = "发布时间", example = "2024-11-03T10:00:00")
+    private LocalDateTime publishedAt;
 }
 

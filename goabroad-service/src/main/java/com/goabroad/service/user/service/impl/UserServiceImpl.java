@@ -75,20 +75,7 @@ public class UserServiceImpl implements UserService {
                 .likesCount(0) // TODO: 从帖子表统计获赞数
                 .build();
         vo.setStats(stats);
-        
-        // 设置徽章（示例）
-        List<String> badges = new ArrayList<>();
-        if (user.getLevel() >= 1) {
-            badges.add("新人");
-        }
-        if (user.getLevel() >= 3) {
-            badges.add("探索者");
-        }
-        if (user.getPostCount() >= 10) {
-            badges.add("热心助人");
-        }
-        vo.setBadges(badges);
-        
+
         // 查询用户偏好获取目标国家
         userPreferencesRepository.findByUserIdAndDeletedFalse(userId)
                 .ifPresent(prefs -> vo.setTargetCountry(prefs.getTargetType()));

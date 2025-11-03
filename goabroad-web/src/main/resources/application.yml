@@ -68,7 +68,7 @@ minio:
   access-key: minioadmin  # 访问密钥
   secret-key: minioadmin  # 密钥
   bucket-name: goabroad  # 存储桶名称
-  base-url: http://192.168.31.183:9000  # 文件访问URL前缀
+  base-url: http://192.168.31.185:9000  # 文件访问URL前缀
   secure: false  # 是否使用 HTTPS
 
 # SpringDoc 配置

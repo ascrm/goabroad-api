@@ -22,10 +22,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_status", columnList = "status"),
-    @Index(name = "idx_deleted", columnList = "deleted"),
-    @Index(name = "idx_created_at", columnList = "created_at"),
-    @Index(name = "idx_level_points", columnList = "level,points")
+    @Index(name = "idx_users_status", columnList = "status"),
+    @Index(name = "idx_users_deleted", columnList = "deleted"),
+    @Index(name = "idx_users_created_at", columnList = "created_at")
 }, uniqueConstraints = {
     @UniqueConstraint(name = "uk_username", columnNames = "username"),
     @UniqueConstraint(name = "uk_email", columnNames = "email"),
@@ -81,32 +80,21 @@ public class User extends BaseEntity {
      * 性别
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender", length = 20)
+    @Column(name = "gender", length = 30)
     private Gender gender;
     
-    // ========== 社区等级 ==========
+    /**
+     * 出生日期
+     */
+    @Column(name = "birth_date")
+    private java.time.LocalDate birthDate;
     
     /**
-     * 用户等级 1-10
+     * 所在地
      */
-    @Column(name = "level", nullable = false)
-    @Builder.Default
-    private Short level = 1;
-    
-    /**
-     * 积分
-     */
-    @Column(name = "points", nullable = false)
-    @Builder.Default
-    private Integer points = 0;
-    
-    /**
-     * 经验值
-     */
-    @Column(name = "exp", nullable = false)
-    @Builder.Default
-    private Integer exp = 0;
-    
+    @Column(name = "location", length = 100)
+    private String location;
+
     // ========== 统计数据（冗余） ==========
     
     /**
@@ -153,19 +141,6 @@ public class User extends BaseEntity {
     @Column(name = "phone_verified", nullable = false)
     @Builder.Default
     private Boolean phoneVerified = false;
-    
-    /**
-     * 是否会员
-     */
-    @Column(name = "is_vip", nullable = false)
-    @Builder.Default
-    private Boolean isVip = false;
-    
-    /**
-     * 会员到期时间
-     */
-    @Column(name = "vip_expire_at")
-    private LocalDateTime vipExpireAt;
     
     // ========== 最后活跃 ==========
     

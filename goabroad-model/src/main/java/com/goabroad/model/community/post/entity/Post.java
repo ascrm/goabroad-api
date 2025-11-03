@@ -47,7 +47,7 @@ public class Post extends BaseEntity {
     /**
      * 标题
      */
-    @Column(name = "title", length = 200)
+    @Column(name = "title", nullable = false, length = 200)
     private String title;
     
     /**
@@ -69,22 +69,13 @@ public class Post extends BaseEntity {
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "content_type", nullable = false, length = 20)
-    @Builder.Default
-    private ContentType contentType = ContentType.POST;
-    
-    // ========== 分类 ==========
+    private ContentType contentType;
     
     /**
-     * 分区（按国家/阶段/类型）
+     * 分类
      */
     @Column(name = "category", length = 50)
     private String category;
-    
-    /**
-     * 关联国家
-     */
-    @Column(name = "country_code", length = 2)
-    private String countryCode;
     
     // ========== 媒体 ==========
     

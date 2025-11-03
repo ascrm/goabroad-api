@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 文件上传控制器
@@ -39,51 +37,37 @@ public class FileController {
      */
     @PostMapping
     @Operation(summary = "通用文件上传", description = "上传单个文件")
-    public Result<FileUploadVo> uploadFile(
-            @Parameter(description = "文件", required = true) @RequestParam("file") MultipartFile file,
-            @Parameter(description = "文件类型", example = "avatar") @RequestParam(defaultValue = "attachment") String type) {
+    public Result<String> uploadFile(
+            @Parameter(description = "文件", required = true) @RequestParam("file") MultipartFile file) {
         
         Long userId = StpUtil.getLoginIdAsLong();
-        FileType fileType = FileType.fromCode(type);
         
-        FileUploadVo vo = fileStorageService.uploadFile(file, fileType, userId);
-        return Result.success("上传成功", vo);
+        FileUploadVo vo = fileStorageService.uploadFile(file, FileType.ATTACHMENT, userId);
+        return Result.success("上传成功", vo.getUrl());
     }
     
     /**
      * 批量文件上传
      */
     @PostMapping("/batch")
-    @Operation(summary = "批量文件上传", description = "上传多个文件")
-    public Result<Map<String, Object>> uploadFiles(
-            @Parameter(description = "文件列表", required = true) @RequestParam("files") MultipartFile[] files,
-            @Parameter(description = "文件类型", example = "post_image") @RequestParam(defaultValue = "attachment") String type) {
+    @Operation(summary = "批量文件上传", description = "批量上传多个文件")
+    public Result<List<String>> uploadFiles(
+            @Parameter(description = "文件列表", required = true) @RequestParam("files") MultipartFile[] files) {
         
         Long userId = StpUtil.getLoginIdAsLong();
-        FileType fileType = FileType.fromCode(type);
         
-        List<FileUploadVo> uploadedFiles = new ArrayList<>();
-        int successCount = 0;
-        int failedCount = 0;
+        List<String> urls = new ArrayList<>();
         
         for (MultipartFile file : files) {
             try {
-                FileUploadVo vo = fileStorageService.uploadFile(file, fileType, userId);
-                uploadedFiles.add(vo);
-                successCount++;
+                FileUploadVo vo = fileStorageService.uploadFile(file, FileType.ATTACHMENT, userId);
+                urls.add(vo.getUrl());
             } catch (Exception e) {
                 log.error("文件上传失败: {}", file.getOriginalFilename(), e);
-                failedCount++;
             }
         }
         
-        Map<String, Object> result = new HashMap<>();
-        result.put("total", files.length);
-        result.put("success", successCount);
-        result.put("failed", failedCount);
-        result.put("files", uploadedFiles);
-        
-        return Result.success("上传完成", result);
+        return Result.success("上传完成", urls);
     }
     
     /**

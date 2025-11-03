@@ -41,6 +41,13 @@ public class UserProfileVo {
     @Schema(description = "性别", example = "MALE")
     private Gender gender;
     
+    @Schema(description = "出生日期", example = "1999-05-20")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate birthDate;
+    
+    @Schema(description = "所在地", example = "北京市")
+    private String location;
+    
     @Schema(description = "目标国家", example = "US")
     private String targetCountry;
     

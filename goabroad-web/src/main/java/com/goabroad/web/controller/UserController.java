@@ -4,11 +4,11 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.goabroad.common.pojo.PageResult;
 import com.goabroad.common.pojo.Result;
 import com.goabroad.model.community.post.vo.PostSimpleVo;
-import com.goabroad.model.file.vo.FileUploadVo;
-import com.goabroad.model.user.vo.*;
 import com.goabroad.model.user.dto.UpdateUserProfileDto;
-import com.goabroad.model.file.enums.FileType;
-import com.goabroad.service.file.service.FileStorageService;
+import com.goabroad.model.user.vo.FollowVo;
+import com.goabroad.model.user.vo.UserProfileVo;
+import com.goabroad.model.user.vo.UserPublicVo;
+import com.goabroad.model.user.vo.UserSimpleVo;
 import com.goabroad.service.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 用户控制器
@@ -36,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
     
     private final UserService userService;
-    private final FileStorageService fileStorageService;
     
     /**
      * 获取用户公开资料
@@ -76,33 +74,6 @@ public class UserController {
         Long userId = StpUtil.getLoginIdAsLong();
         UserProfileVo vo = userService.updateUserProfile(userId, dto);
         return Result.success("资料更新成功", vo);
-    }
-    
-    /**
-     * 上传头像
-     */
-    @PostMapping("/avatar")
-    @Operation(summary = "上传头像", description = "上传用户头像")
-    public Result<AvatarUploadVo> uploadAvatar(
-            @Parameter(description = "头像文件", required = true) @RequestParam("avatar") MultipartFile avatar) {
-        
-        Long userId = StpUtil.getLoginIdAsLong();
-        
-        // 上传文件
-        FileUploadVo fileVo = fileStorageService.uploadFile(avatar, FileType.AVATAR, userId);
-        
-        // 更新用户头像
-        UpdateUserProfileDto dto = new UpdateUserProfileDto();
-        dto.setAvatarUrl(fileVo.getUrl());
-        userService.updateUserProfile(userId, dto);
-        
-        // 构建响应
-        AvatarUploadVo vo = AvatarUploadVo.builder()
-                .avatar(fileVo.getUrl())
-                .thumbnail(fileVo.getThumbnailUrl())
-                .build();
-        
-        return Result.success("头像上传成功", vo);
     }
     
     /**

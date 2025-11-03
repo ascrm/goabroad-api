@@ -45,7 +45,6 @@ public interface UserConverter {
      */
     @Mapping(target = "stats", ignore = true)
     @Mapping(target = "isFollowing", ignore = true)
-    @Mapping(target = "badges", ignore = true)
     @Mapping(target = "targetCountry", ignore = true)
     UserPublicVo toUserPublicVo(User user);
     

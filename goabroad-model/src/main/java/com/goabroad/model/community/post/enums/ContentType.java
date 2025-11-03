@@ -9,23 +9,23 @@ package com.goabroad.model.community.post.enums;
  */
 public enum ContentType {
     /**
-     * 帖子
+     * 日常生活动态
      */
-    POST,
+    TREND,
     
     /**
-     * 提问
+     * 提问题
      */
     QUESTION,
     
     /**
-     * 时间线
+     * 写答案
      */
-    TIMELINE,
+    ANSWER,
     
     /**
-     * 视频日志
+     * 写攻略
      */
-    VLOG
+    GUIDE
 }
 

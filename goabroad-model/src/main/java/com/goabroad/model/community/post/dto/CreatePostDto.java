@@ -31,7 +31,7 @@ public class CreatePostDto {
      * 内容类型
      */
     @NotNull(message = "内容类型不能为空")
-    @Schema(description = "内容类型：POST-经验分享, QUESTION-问题, TIMELINE-时间线, VLOG-视频", 
+    @Schema(description = "内容类型：攻略，日常，提问，回答",
             example = "POST")
     private ContentType contentType;
     
@@ -52,50 +52,56 @@ public class CreatePostDto {
     private String content;
     
     /**
-     * 发布状态
+     * 摘要（用于列表展示）
      */
-    @Schema(description = "发布状态：DRAFT-草稿, PUBLISHED-已发布", 
-            example = "PUBLISHED", defaultValue = "PUBLISHED")
-    private PostStatus status;
+    @Size(max = 500, message = "摘要长度不能超过500")
+    @Schema(description = "摘要（用于列表展示，不传则后端自动截取content前100字）", 
+            example = "F1签证面签通过，分享准备材料和面试技巧",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String summary;
+    
+    /**
+     * 分类标签
+     */
+    @Size(max = 50, message = "分类标签长度不能超过50")
+    @Schema(description = "分类标签（如：留学、签证、生活等）", 
+            example = "签证",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private String category;
     
     /**
      * 封面图片URL
      */
     @Size(max = 500, message = "封面图片URL长度不能超过500")
     @Schema(description = "封面图片URL", 
-            example = "https://cdn.goabroad.com/posts/cover-123.jpg")
+            example = "https://cdn.goabroad.com/posts/cover-123.jpg",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String coverImage;
     
     /**
-     * 图片URL列表
+     * 图片/视频URL数组
      */
-    @Schema(description = "图片URL列表")
-    private List<String> images;
+    @Schema(description = "图片/视频 URL 数组",
+            example = "[\"url1\", \"url2\"]",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private List<String> mediaUrls;
     
     /**
-     * 视频URL列表
+     * 发布状态
      */
-    @Schema(description = "视频URL列表")
-    private List<String> videos;
+    @Schema(description = "发布状态：DRAFT-草稿, PUBLISHED-已发布", 
+            example = "PUBLISHED", 
+            defaultValue = "PUBLISHED",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private PostStatus status;
     
     /**
-     * 标签列表
+     * 是否允许评论
      */
-    @Schema(description = "标签列表", example = "[\"美国\", \"签证\", \"F1\"]")
-    private List<String> tags;
-    
-    /**
-     * 国家代码
-     */
-    @Size(max = 10, message = "国家代码长度不能超过10")
-    @Schema(description = "国家代码", example = "US")
-    private String country;
-    
-    /**
-     * 阶段标签
-     */
-    @Size(max = 50, message = "阶段标签长度不能超过50")
-    @Schema(description = "阶段标签", example = "签证办理")
-    private String stage;
+    @Schema(description = "是否允许评论", 
+            example = "true", 
+            defaultValue = "true",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Boolean allowComment;
 }
 

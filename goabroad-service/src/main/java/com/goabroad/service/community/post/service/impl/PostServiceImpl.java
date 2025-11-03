@@ -52,40 +52,36 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BusinessException.of(ResultCode.USER_NOT_FOUND));
         
-        // 2. 合并图片和视频到mediaUrls
-        List<String> mediaUrls = new ArrayList<>();
-        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
-            mediaUrls.addAll(dto.getImages());
-        }
-        if (dto.getVideos() != null && !dto.getVideos().isEmpty()) {
-            mediaUrls.addAll(dto.getVideos());
+        // 2. 处理摘要（如果未提供，自动截取content前100字）
+        String summary = dto.getSummary();
+        if (StrUtil.isBlank(summary)) {
+            summary = generateSummary(dto.getContent());
         }
         
-        // 3. 构建帖子实体
+        // 3. 确定发布状态和发布时间
+        PostStatus status = dto.getStatus() != null ? dto.getStatus() : PostStatus.PUBLISHED;
+        LocalDateTime publishedAt = (status == PostStatus.PUBLISHED) ? LocalDateTime.now() : null;
+        
+        // 4. 构建帖子实体
         Post post = Post.builder()
                 .authorId(userId)
                 .contentType(dto.getContentType())
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .status(dto.getStatus() != null ? dto.getStatus() : PostStatus.PUBLISHED)
+                .summary(summary)
+                .category(dto.getCategory())
                 .coverImage(dto.getCoverImage())
-                .mediaUrls(mediaUrls.isEmpty() ? null : mediaUrls)
-                .countryCode(dto.getCountry())
-                .category(dto.getStage())
-                .publishedAt(dto.getStatus() == PostStatus.PUBLISHED ? LocalDateTime.now() : null)
+                .mediaUrls(dto.getMediaUrls())
+                .status(status)
+                .allowComment(dto.getAllowComment() != null ? dto.getAllowComment() : true)
+                .publishedAt(publishedAt)
                 .build();
         
         // 设置BaseEntity的字段（deleted已在BaseEntity中有默认值false）
         post.setDeleted(false);
         
-        // 4. 保存帖子
+        // 5. 保存帖子
         post = postRepository.save(post);
-        
-        // 5. 处理标签
-        if (CollUtil.isNotEmpty(dto.getTags())) {
-            List<Tag> savedTags = processAndSaveTags(dto.getTags(), post.getId());
-            log.info("帖子{}关联了{}个标签", post.getId(), savedTags.size());
-        }
         
         // 6. 如果是已发布状态，更新用户的发帖数
         if (post.getStatus() == PostStatus.PUBLISHED) {
@@ -93,10 +89,11 @@ public class PostServiceImpl implements PostService {
             userRepository.save(user);
         }
         
-        log.info("用户{}发布了帖子，帖子ID: {}, 标题: {}", userId, post.getId(), post.getTitle());
+        log.info("用户{}发布了帖子，帖子ID: {}, 标题: {}, 状态: {}", 
+                userId, post.getId(), post.getTitle(), post.getStatus());
         
         // 7. 转换为VO并返回
-        return convertToPostDetailVo(post, user);
+        return convertToPostDetailVo(post);
     }
     
     /**
@@ -164,97 +161,58 @@ public class PostServiceImpl implements PostService {
     }
     
     /**
+     * 生成摘要（自动截取content前100字）
+     */
+    private String generateSummary(String content) {
+        if (StrUtil.isBlank(content)) {
+            return "";
+        }
+        
+        // 移除Markdown标记（简单处理）
+        String plainText = content
+                .replaceAll("#+ ", "")  // 移除标题标记
+                .replaceAll("\\*\\*(.+?)\\*\\*", "$1")  // 移除粗体
+                .replaceAll("\\*(.+?)\\*", "$1")  // 移除斜体
+                .replaceAll("\\[(.+?)\\]\\(.+?\\)", "$1")  // 移除链接，保留文字
+                .replaceAll("\\n+", " ")  // 换行替换为空格
+                .trim();
+        
+        // 截取前100字
+        if (plainText.length() > 100) {
+            return plainText.substring(0, 100) + "...";
+        }
+        return plainText;
+    }
+    
+    /**
      * 转换为帖子详情VO
      */
-    private PostDetailVo convertToPostDetailVo(Post post, User user) {
-        // 构建作者信息
-        PostDetailVo.AuthorVo authorVo = PostDetailVo.AuthorVo.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .nickname(user.getNickname())
-                .avatarUrl(user.getAvatarUrl())
-                .bio(user.getBio())
-                .level(user.getLevel())
-                .badges(generateBadges(user))
-                .isFollowing(false) // 自己发的帖子，不需要关注状态
-                .build();
-        
-        // 解析JSON字段
-        List<String> mediaUrls = post.getMediaUrls() != null ? post.getMediaUrls() : new ArrayList<>();
-        
-        // 简单处理：所有媒体URL都作为images返回（后续可优化区分图片和视频）
-        List<String> images = new ArrayList<>(mediaUrls);
-        List<String> videos = new ArrayList<>();
-        
-        // 构建帖子详情VO
+    private PostDetailVo convertToPostDetailVo(Post post) {
         return PostDetailVo.builder()
                 .id(post.getId())
-                .author(authorVo)
+                .authorId(post.getAuthorId())
                 .contentType(post.getContentType())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .status(post.getStatus())
+                .summary(post.getSummary())
+                .category(post.getCategory())
                 .coverImage(post.getCoverImage())
-                .images(images)
-                .videos(videos)
-                .country(post.getCountryCode())
-                .countryName(getCountryName(post.getCountryCode()))
-                .stage(post.getCategory())
+                .mediaUrls(post.getMediaUrls() != null ? post.getMediaUrls() : new ArrayList<>())
+                .status(post.getStatus())
+                .allowComment(post.getAllowComment())
+                .viewCount(post.getViewCount())
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getCommentCount())
                 .collectCount(post.getCollectCount())
-                .viewCount(post.getViewCount())
-                .isLiked(false)
-                .isCollected(false)
-                .isPinned(post.getIsPinned())
+                .shareCount(post.getShareCount())
                 .isFeatured(post.getIsFeatured())
+                .isPinned(post.getIsPinned())
+                .isHot(post.getIsHot())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
+                .publishedAt(post.getPublishedAt())
                 .build();
     }
     
-    /**
-     * 生成用户徽章
-     */
-    private List<String> generateBadges(User user) {
-        List<String> badges = new ArrayList<>();
-        
-        // 根据用户等级和发帖数生成徽章
-        if (user.getLevel() == 1) {
-            badges.add("新人");
-        }
-        if (user.getPostCount() >= 10) {
-            badges.add("活跃用户");
-        }
-        if (user.getPostCount() >= 50) {
-            badges.add("内容贡献者");
-        }
-        
-        return badges;
-    }
-    
-    /**
-     * 获取国家名称
-     * TODO: 后续从国家表中查询
-     */
-    private String getCountryName(String countryCode) {
-        if (StrUtil.isBlank(countryCode)) {
-            return null;
-        }
-        
-        // 临时硬编码，后续从数据库查询
-        return switch (countryCode) {
-            case "US" -> "美国";
-            case "UK" -> "英国";
-            case "CA" -> "加拿大";
-            case "AU" -> "澳大利亚";
-            case "DE" -> "德国";
-            case "FR" -> "法国";
-            case "JP" -> "日本";
-            case "KR" -> "韩国";
-            case "SG" -> "新加坡";
-            default -> countryCode;
-        };
-    }
 }
 

@@ -38,9 +38,6 @@ public class UserSimpleVo {
     @Schema(description = "个人简介", example = "正在准备留学")
     private String bio;
     
-    @Schema(description = "用户等级", example = "3")
-    private Short level;
-    
     @Schema(description = "是否关注", example = "true")
     private Boolean isFollowing;
     

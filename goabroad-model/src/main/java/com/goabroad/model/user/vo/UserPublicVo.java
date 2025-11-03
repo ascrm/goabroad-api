@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 用户公开资料VO
@@ -44,14 +43,11 @@ public class UserPublicVo {
     @Schema(description = "性别", example = "MALE")
     private Gender gender;
     
-    @Schema(description = "用户等级", example = "5")
-    private Short level;
+    @Schema(description = "所在地", example = "北京市")
+    private String location;
     
     @Schema(description = "账号状态", example = "ACTIVE")
     private UserStatus status;
-    
-    @Schema(description = "徽章列表", example = "[\"新人\", \"探索者\", \"热心助人\"]")
-    private List<String> badges;
     
     @Schema(description = "目标国家", example = "US")
     private String targetCountry;

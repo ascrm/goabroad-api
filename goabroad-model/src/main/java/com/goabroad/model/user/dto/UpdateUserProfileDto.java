@@ -29,6 +29,13 @@ public class UpdateUserProfileDto {
     @Schema(description = "性别", example = "MALE")
     private Gender gender;
     
+    @Schema(description = "出生日期", example = "1999-05-20")
+    private LocalDate birthDate;
+    
+    @Schema(description = "所在地", example = "北京市")
+    @Size(max = 100, message = "所在地不能超过100个字符")
+    private String location;
+    
     @Schema(description = "目标国家代码", example = "US")
     private String targetCountry;
     

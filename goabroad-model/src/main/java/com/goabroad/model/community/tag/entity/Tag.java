@@ -4,6 +4,7 @@ import com.goabroad.model.BaseEntity;
 import lombok.*;
 
 import jakarta.persistence.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * 标签字典实体类
@@ -14,7 +15,7 @@ import jakarta.persistence.*;
  */
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

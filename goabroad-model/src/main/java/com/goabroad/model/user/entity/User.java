@@ -6,6 +6,8 @@ import com.goabroad.model.user.enums.UserStatus;
 import lombok.*;
 
 import jakarta.persistence.*;
+import lombok.experimental.SuperBuilder;
+
 import java.time.LocalDateTime;
 
 /**
@@ -17,7 +19,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

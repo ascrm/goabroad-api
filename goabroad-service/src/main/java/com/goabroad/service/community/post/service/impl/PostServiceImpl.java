@@ -1,9 +1,9 @@
 package com.goabroad.service.community.post.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.goabroad.common.exception.BusinessException;
 import com.goabroad.common.pojo.ResultCode;
+import com.goabroad.model.community.post.converter.PostConverter;
 import com.goabroad.model.community.post.dto.CreatePostDto;
 import com.goabroad.model.community.post.entity.Post;
 import com.goabroad.model.community.post.entity.PostTag;
@@ -41,6 +41,7 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
+    private final PostConverter postConverter;
     
     /**
      * 发布帖子
@@ -62,23 +63,8 @@ public class PostServiceImpl implements PostService {
         PostStatus status = dto.getStatus() != null ? dto.getStatus() : PostStatus.PUBLISHED;
         LocalDateTime publishedAt = (status == PostStatus.PUBLISHED) ? LocalDateTime.now() : null;
         
-        // 4. 构建帖子实体
-        Post post = Post.builder()
-                .authorId(userId)
-                .contentType(dto.getContentType())
-                .title(dto.getTitle())
-                .content(dto.getContent())
-                .summary(summary)
-                .category(dto.getCategory())
-                .coverImage(dto.getCoverImage())
-                .mediaUrls(dto.getMediaUrls())
-                .status(status)
-                .allowComment(dto.getAllowComment() != null ? dto.getAllowComment() : true)
-                .publishedAt(publishedAt)
-                .build();
-        
-        // 设置BaseEntity的字段（deleted已在BaseEntity中有默认值false）
-        post.setDeleted(false);
+        // 4. 使用 MapStruct 转换 DTO 为 Post 实体
+        Post post = postConverter.toPost(dto, userId, summary, status, publishedAt);
         
         // 5. 保存帖子
         post = postRepository.save(post);
@@ -92,8 +78,8 @@ public class PostServiceImpl implements PostService {
         log.info("用户{}发布了帖子，帖子ID: {}, 标题: {}, 状态: {}", 
                 userId, post.getId(), post.getTitle(), post.getStatus());
         
-        // 7. 转换为VO并返回
-        return convertToPostDetailVo(post);
+        // 7. 使用 MapStruct 转换为 VO 并返回
+        return postConverter.toPostDetailVo(post);
     }
     
     /**
@@ -182,36 +168,6 @@ public class PostServiceImpl implements PostService {
             return plainText.substring(0, 100) + "...";
         }
         return plainText;
-    }
-    
-    /**
-     * 转换为帖子详情VO
-     */
-    private PostDetailVo convertToPostDetailVo(Post post) {
-        return PostDetailVo.builder()
-                .id(post.getId())
-                .authorId(post.getAuthorId())
-                .contentType(post.getContentType())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .summary(post.getSummary())
-                .category(post.getCategory())
-                .coverImage(post.getCoverImage())
-                .mediaUrls(post.getMediaUrls() != null ? post.getMediaUrls() : new ArrayList<>())
-                .status(post.getStatus())
-                .allowComment(post.getAllowComment())
-                .viewCount(post.getViewCount())
-                .likeCount(post.getLikeCount())
-                .commentCount(post.getCommentCount())
-                .collectCount(post.getCollectCount())
-                .shareCount(post.getShareCount())
-                .isFeatured(post.getIsFeatured())
-                .isPinned(post.getIsPinned())
-                .isHot(post.getIsHot())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .publishedAt(post.getPublishedAt())
-                .build();
     }
     
 }

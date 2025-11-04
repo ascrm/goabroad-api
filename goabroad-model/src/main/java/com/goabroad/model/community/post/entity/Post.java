@@ -5,6 +5,7 @@ import com.goabroad.model.community.post.enums.ContentType;
 import com.goabroad.model.community.post.enums.PostStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -20,7 +21,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

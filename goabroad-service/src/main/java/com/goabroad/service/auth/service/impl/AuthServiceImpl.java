@@ -66,18 +66,15 @@ public class AuthServiceImpl implements AuthService {
             throw BusinessException.of(ResultCode.ERROR, "验证码错误");
         }
 
+        // 3. 生成用户信息
         String randomUsername = authTool.generateRandomUsername();
         String encodedPassword = passwordEncoder.encode(register.getPassword());
-        User user = User.builder()
-                .username(randomUsername)
-                .phone(register.getPhone())
-                .passwordHash(encodedPassword)
-                .nickname("用户" + RandomUtil.randomNumbers(6))
-                .email(null) // 邮箱初始为空
-                .phoneVerified(true) // 手机号已验证
-                .emailVerified(false)
-                .build();
+        String nickname = "用户" + RandomUtil.randomNumbers(6);
         
+        // 4. 使用 MapStruct 创建用户实体
+        User user = userConverter.toUser(randomUsername, register.getPhone(), encodedPassword, nickname, true);
+        
+        // 5. 保存用户并登录
         User savedUser = userRepository.save(user);
         redisTemplate.delete(redisKey);
         StpUtil.login(savedUser.getId());

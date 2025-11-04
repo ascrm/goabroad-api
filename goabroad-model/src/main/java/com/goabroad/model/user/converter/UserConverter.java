@@ -19,11 +19,22 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface UserConverter {
     
+    // ============================================
+    // DTO -> Entity 转换
+    // ============================================
+    
+    /**
+     * 从注册信息创建User实体
+     */
+    @Mapping(target = "id", ignore = true)
+    User toUser(String username, String phone, String passwordHash, String nickname, Boolean phoneVerified);
+    
+    // ============================================
+    // Entity -> VO 转换
+    // ============================================
+    
     /**
      * User 实体转换为 UserVo（带脱敏）
-     * 
-     * @param user 用户实体
-     * @return 用户视图对象
      */
     @Mapping(target = "phone", expression = "java(cn.hutool.core.util.DesensitizedUtil.mobilePhone(user.getPhone()))")
     @Mapping(target = "email", expression = "java(cn.hutool.core.util.DesensitizedUtil.email(user.getEmail()))")

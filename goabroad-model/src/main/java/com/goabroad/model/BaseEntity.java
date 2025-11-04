@@ -1,6 +1,7 @@
 package com.goabroad.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -57,7 +58,8 @@ public abstract class BaseEntity implements Serializable {
      * 逻辑删除标记 (0=未删除 1=已删除)
      */
     @Column(name = "deleted", nullable = false)
-    private Boolean deleted;
+    @Builder.Default
+    private Boolean deleted =  false;
     
     /**
      * 乐观锁版本号

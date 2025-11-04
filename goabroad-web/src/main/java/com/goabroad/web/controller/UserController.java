@@ -70,10 +70,10 @@ public class UserController {
      */
     @PutMapping("/profile")
     @Operation(summary = "更新用户资料", description = "更新当前用户的资料")
-    public Result<UserProfileVo> updateUserProfile(@Valid @RequestBody UpdateUserProfileDto dto) {
+    public Result<String> updateUserProfile(@Valid @RequestBody UpdateUserProfileDto dto) {
         Long userId = StpUtil.getLoginIdAsLong();
-        UserProfileVo vo = userService.updateUserProfile(userId, dto);
-        return Result.success("资料更新成功", vo);
+        userService.updateUserProfile(userId, dto);
+        return Result.success("资料更新成功");
     }
     
     /**

@@ -38,6 +38,12 @@ public class PostDetailVo {
     private Long authorId;
     
     /**
+     * 父帖子ID（回答帖子关联到问题帖子）
+     */
+    @Schema(description = "父帖子ID（回答帖子关联到问题帖子）", example = "123")
+    private Long parentPostId;
+    
+    /**
      * 内容类型
      */
     @Schema(description = "内容类型", example = "GUIDE")
@@ -120,6 +126,12 @@ public class PostDetailVo {
      */
     @Schema(description = "分享数", example = "0")
     private Integer shareCount;
+    
+    /**
+     * 回答数（仅问题帖子有效）
+     */
+    @Schema(description = "回答数（仅问题帖子有效）", example = "15")
+    private Integer answerCount;
     
     /**
      * 是否精选（管理员设置）

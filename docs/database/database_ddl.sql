@@ -606,6 +606,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TABLE posts (
     id BIGSERIAL PRIMARY KEY,
     author_id BIGINT NOT NULL,
+    parent_post_id BIGINT,
     title VARCHAR(200) NOT NULL,
     content TEXT NOT NULL,
     summary VARCHAR(500),
@@ -619,6 +620,7 @@ CREATE TABLE posts (
     comment_count INTEGER DEFAULT 0,
     collect_count INTEGER DEFAULT 0,
     share_count INTEGER DEFAULT 0,
+    answer_count INTEGER DEFAULT 0,
     is_featured BOOLEAN DEFAULT FALSE,
     is_pinned BOOLEAN DEFAULT FALSE,
     is_hot BOOLEAN DEFAULT FALSE,
@@ -630,7 +632,8 @@ CREATE TABLE posts (
     published_at TIMESTAMP,
     deleted BOOLEAN DEFAULT FALSE,
     version_id INTEGER DEFAULT 0,
-    CONSTRAINT fk_posts_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_posts_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_posts_parent FOREIGN KEY (parent_post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_posts_author_id ON posts(author_id);
@@ -640,6 +643,7 @@ CREATE INDEX idx_posts_country_code ON posts(country_code);
 CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
 CREATE INDEX idx_posts_deleted ON posts(deleted);
 CREATE INDEX idx_posts_hot_featured ON posts(is_hot, is_featured);
+CREATE INDEX idx_posts_parent_post_id ON posts(parent_post_id);
 CREATE INDEX idx_posts_status ON posts(status);
 
 -- 全文搜索索引（PostgreSQL使用GIN索引）
@@ -647,6 +651,7 @@ CREATE INDEX idx_posts_fulltext ON posts USING GIN(to_tsvector('english', title 
 
 COMMENT ON TABLE posts IS '帖子表';
 COMMENT ON COLUMN posts.author_id IS '作者ID';
+COMMENT ON COLUMN posts.parent_post_id IS '父帖子ID（回答帖子关联到问题帖子，问题帖子为NULL）';
 COMMENT ON COLUMN posts.title IS '标题';
 COMMENT ON COLUMN posts.content IS '正文内容（Markdown）';
 COMMENT ON COLUMN posts.summary IS '摘要（自动提取）';
@@ -659,6 +664,7 @@ COMMENT ON COLUMN posts.like_count IS '点赞数';
 COMMENT ON COLUMN posts.comment_count IS '评论数';
 COMMENT ON COLUMN posts.collect_count IS '收藏数';
 COMMENT ON COLUMN posts.share_count IS '分享数';
+COMMENT ON COLUMN posts.answer_count IS '回答数（仅问题帖子有效）';
 COMMENT ON COLUMN posts.is_featured IS '是否精选';
 COMMENT ON COLUMN posts.is_pinned IS '是否置顶';
 COMMENT ON COLUMN posts.is_hot IS '是否热门';

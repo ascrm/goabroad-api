@@ -33,6 +33,7 @@ import java.util.List;
     @Index(name = "idx_status", columnList = "status"),
     @Index(name = "idx_created_at", columnList = "created_at"),
     @Index(name = "idx_hot_featured", columnList = "is_hot,is_featured"),
+    @Index(name = "idx_parent_post_id", columnList = "parent_post_id"),
     @Index(name = "idx_deleted", columnList = "deleted")
 })
 public class Post extends BaseEntity {
@@ -42,6 +43,12 @@ public class Post extends BaseEntity {
      */
     @Column(name = "author_id", nullable = false)
     private Long authorId;
+    
+    /**
+     * 父帖子ID（回答帖子关联到问题帖子，问题帖子为NULL）
+     */
+    @Column(name = "parent_post_id")
+    private Long parentPostId;
     
     // ========== 内容 ==========
     
@@ -129,6 +136,13 @@ public class Post extends BaseEntity {
     @Column(name = "share_count", nullable = false)
     @Builder.Default
     private Integer shareCount = 0;
+    
+    /**
+     * 回答数（仅问题帖子有效）
+     */
+    @Column(name = "answer_count", nullable = false)
+    @Builder.Default
+    private Integer answerCount = 0;
     
     // ========== 状态 ==========
     

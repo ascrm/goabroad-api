@@ -1,20 +1,27 @@
 package com.goabroad.service.community.post.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.goabroad.common.exception.BusinessException;
 import com.goabroad.common.pojo.ResultCode;
 import com.goabroad.model.community.post.converter.PostConverter;
 import com.goabroad.model.community.post.dto.CreatePostDto;
 import com.goabroad.model.community.post.entity.Post;
-import com.goabroad.model.user.entity.User;
+import com.goabroad.model.community.post.enums.ContentType;
 import com.goabroad.model.community.post.enums.PostStatus;
 import com.goabroad.model.community.post.vo.PostDetailVo;
+import com.goabroad.model.community.post.vo.PostSimpleVo;
+import com.goabroad.model.user.entity.User;
 import com.goabroad.service.community.post.repository.PostRepository;
 import com.goabroad.service.community.post.service.PostService;
+import com.goabroad.service.community.post.strategy.PostQueryStrategy;
+import com.goabroad.service.community.post.strategy.PostQueryStrategyFactory;
 import com.goabroad.service.community.post.tools.PostServiceHelper;
 import com.goabroad.service.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +43,7 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final PostConverter postConverter;
     private final PostServiceHelper postServiceHelper;
+    private final PostQueryStrategyFactory strategyFactory;
     
     /**
      * 发布帖子
@@ -63,7 +71,13 @@ public class PostServiceImpl implements PostService {
         // 5. 保存帖子
         post = postRepository.save(post);
         
-        // 6. 如果是已发布状态，更新用户的发帖数
+        // 6. 处理标签
+        if (CollUtil.isNotEmpty(dto.getTags())) {
+            postServiceHelper.processAndSaveTags(dto.getTags(), post.getId());
+            log.info("为帖子{}添加标签: {}", post.getId(), dto.getTags());
+        }
+        
+        // 7. 如果是已发布状态，更新用户的发帖数
         if (post.getStatus() == PostStatus.PUBLISHED) {
             user.setPostCount(user.getPostCount() + 1);
             userRepository.save(user);
@@ -72,8 +86,39 @@ public class PostServiceImpl implements PostService {
         log.info("用户{}发布了帖子，帖子ID: {}, 标题: {}, 状态: {}", 
                 userId, post.getId(), post.getTitle(), post.getStatus());
         
-        // 7. 使用 MapStruct 转换为 VO 并返回
+        // 8. 使用 MapStruct 转换为 VO 并返回
         return postConverter.toPostDetailVo(post);
     }
+    
+    /**
+     * 根据内容类型查询帖子列表（分页）
+     * <p>
+     * 使用工厂-策略模式，根据不同的 contentType 获取对应的查询策略，
+     * 每个策略有各自的查询逻辑和业务处理
+     */
+    @Override
+    public Page<PostSimpleVo> getPostsByContentType(ContentType contentType, Pageable pageable) {
+        log.info("开始查询帖子列表，内容类型: {}, 分页参数: {}", contentType, pageable);
+        
+        // 1. 从工厂获取对应的查询策略
+        PostQueryStrategy strategy = strategyFactory.getStrategy(contentType);
+        
+        // 2. 使用策略执行查询
+        Page<Post> posts = strategy.queryPosts(pageable);
+        
+        // 3. 执行策略特定的业务处理
+        strategy.processQueryResult(posts);
+        
+        // 4. 转换为 PostSimpleVo
+        Page<PostSimpleVo> result = posts.map(postConverter::toPostSimpleVo);
+        
+        // 5. 批量查询并填充作者信息
+        postServiceHelper.fillAuthorInfo(result.getContent());
+        
+        log.info("帖子列表查询完成，内容类型: {}, 共{}条记录", contentType, result.getTotalElements());
+        return result;
+    }
+    
+
 }
 

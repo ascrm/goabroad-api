@@ -36,6 +36,14 @@ public class CreatePostDto {
     private ContentType contentType;
     
     /**
+     * 父帖子ID（回答帖子关联到问题帖子）
+     */
+    @Schema(description = "父帖子ID（创建回答帖子时必填，问题帖子无需填写）", 
+            example = "123",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Long parentPostId;
+    
+    /**
      * 标题
      */
     @Size(min = 1, max = 200, message = "标题长度必须在1-200之间")
@@ -43,12 +51,12 @@ public class CreatePostDto {
     private String title;
     
     /**
-     * 内容（Markdown格式）
+     * 内容
      */
-    @NotBlank(message = "内容不能为空")
-    @Size(min = 1, max = 50000, message = "内容长度必须在1-50000之间")
+    @Size(max = 50000, message = "内容长度不能超过50000")
     @Schema(description = "帖子内容（Markdown格式）", 
-            example = "# 前言\n\n今天刚刚通过面签...")
+            example = "# 前言\n\n今天刚刚通过面签...",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String content;
     
     /**
@@ -103,5 +111,13 @@ public class CreatePostDto {
             defaultValue = "true",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Boolean allowComment;
+    
+    /**
+     * 标签列表
+     */
+    @Schema(description = "标签列表", 
+            example = "[\"留学\", \"签证\", \"美国\"]",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private List<String> tags;
 }
 

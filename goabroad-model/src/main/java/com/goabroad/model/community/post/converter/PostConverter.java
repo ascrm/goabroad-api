@@ -35,6 +35,7 @@ public interface PostConverter {
      * @param publishedAt 发布时间
      * @return Post实体
      */
+    @Mapping(target = "parentPostId", source = "dto.parentPostId")
     @Mapping(target = "mediaUrls", source = "dto.mediaUrls")
     @Mapping(target = "allowComment", source = "dto.allowComment")
     @Mapping(target = "summary", source = "summary")
@@ -62,6 +63,7 @@ public interface PostConverter {
      * @return 帖子简要信息VO
      */
     @Mapping(target = "contentType", expression = "java(post.getContentType().name())")
+    @Mapping(target = "author", ignore = true)
     @Mapping(target = "tags", ignore = true)
     @Mapping(target = "isLiked", ignore = true)
     @Mapping(target = "isCollected", ignore = true)

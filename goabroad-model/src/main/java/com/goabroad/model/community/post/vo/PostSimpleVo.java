@@ -1,6 +1,7 @@
 package com.goabroad.model.community.post.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.goabroad.model.user.vo.UserSimpleVo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +40,15 @@ public class PostSimpleVo {
     @Schema(description = "内容类型", example = "POST")
     private String contentType;
     
+    @Schema(description = "作者ID（内部使用，用于查询作者信息）", hidden = true)
+    private Long authorId;
+    
+    @Schema(description = "作者信息")
+    private UserSimpleVo author;
+    
+    @Schema(description = "父帖子ID（回答帖子关联到问题帖子）")
+    private Long parentPostId;
+    
     @Schema(description = "标签", example = "[\"美国\", \"签证\", \"F1\"]")
     private List<String> tags;
     
@@ -53,6 +63,9 @@ public class PostSimpleVo {
     
     @Schema(description = "浏览数", example = "1520")
     private Integer viewCount;
+    
+    @Schema(description = "回答数（仅问题帖子有效）", example = "15")
+    private Integer answerCount;
     
     @Schema(description = "是否点赞", example = "false")
     private Boolean isLiked;

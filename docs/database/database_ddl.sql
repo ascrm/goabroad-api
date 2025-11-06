@@ -603,79 +603,135 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 -- ============================================
 -- 15. 帖子表
 -- ============================================
-CREATE TABLE posts (
-    id BIGSERIAL PRIMARY KEY,
-    author_id BIGINT NOT NULL,
-    parent_post_id BIGINT,
-    title VARCHAR(200) NOT NULL,
-    content TEXT NOT NULL,
-    summary VARCHAR(500),
-    content_type VARCHAR(20) DEFAULT 'POST' CHECK (content_type IN ('POST', 'QUESTION', 'TIMELINE', 'VLOG')),
-    category VARCHAR(50),
-    country_code CHAR(2),
-    cover_image VARCHAR(500),
-    media_urls JSONB,
-    view_count INTEGER DEFAULT 0,
-    like_count INTEGER DEFAULT 0,
-    comment_count INTEGER DEFAULT 0,
-    collect_count INTEGER DEFAULT 0,
-    share_count INTEGER DEFAULT 0,
-    answer_count INTEGER DEFAULT 0,
-    is_featured BOOLEAN DEFAULT FALSE,
-    is_pinned BOOLEAN DEFAULT FALSE,
-    is_hot BOOLEAN DEFAULT FALSE,
-    status VARCHAR(20) DEFAULT 'PUBLISHED' CHECK (status IN ('DRAFT', 'PUBLISHED', 'DELETED')),
-    allow_comment BOOLEAN DEFAULT TRUE,
-    slug VARCHAR(200),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    published_at TIMESTAMP,
-    deleted BOOLEAN DEFAULT FALSE,
-    version_id INTEGER DEFAULT 0,
-    CONSTRAINT fk_posts_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_posts_parent FOREIGN KEY (parent_post_id) REFERENCES posts(id) ON DELETE CASCADE
+create table posts
+(
+    id             bigserial
+        primary key,
+    author_id      bigint not null
+        constraint fk_posts_author
+            references users
+            on delete cascade,
+    title          varchar(200),
+    content        text   not null,
+    summary        varchar(500),
+    content_type   varchar(20) default 'TREND'::character varying
+        constraint posts_content_type_check
+            check ((content_type)::text = ANY
+                   ((ARRAY ['TREND'::character varying, 'QUESTION'::character varying, 'ANSWER'::character varying, 'GUIDE'::character varying])::text[])),
+    category       varchar(50),
+    cover_image    varchar(500),
+    media_urls     jsonb,
+    view_count     integer     default 0,
+    like_count     integer     default 0,
+    comment_count  integer     default 0,
+    collect_count  integer     default 0,
+    share_count    integer     default 0,
+    is_featured    boolean     default false,
+    is_pinned      boolean     default false,
+    is_hot         boolean     default false,
+    status         varchar(20) default 'PUBLISHED'::character varying
+        constraint posts_status_check
+            check ((status)::text = ANY
+                   ((ARRAY ['DRAFT'::character varying, 'PUBLISHED'::character varying, 'DELETED'::character varying])::text[])),
+    allow_comment  boolean     default true,
+    slug           varchar(200),
+    created_at     timestamp   default CURRENT_TIMESTAMP,
+    updated_at     timestamp   default CURRENT_TIMESTAMP,
+    published_at   timestamp,
+    deleted        boolean     default false,
+    version_id     integer     default 0,
+    parent_post_id bigint
+        constraint fk_posts_parent
+            references posts
+            on delete cascade,
+    answer_count   integer     default 0
 );
 
-CREATE INDEX idx_posts_author_id ON posts(author_id);
-CREATE INDEX idx_posts_category ON posts(category);
-CREATE INDEX idx_posts_content_type ON posts(content_type);
-CREATE INDEX idx_posts_country_code ON posts(country_code);
-CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
-CREATE INDEX idx_posts_deleted ON posts(deleted);
-CREATE INDEX idx_posts_hot_featured ON posts(is_hot, is_featured);
-CREATE INDEX idx_posts_parent_post_id ON posts(parent_post_id);
-CREATE INDEX idx_posts_status ON posts(status);
+comment on table posts is '帖子表';
 
--- 全文搜索索引（PostgreSQL使用GIN索引）
-CREATE INDEX idx_posts_fulltext ON posts USING GIN(to_tsvector('english', title || ' ' || content));
+comment on column posts.author_id is '作者ID';
 
-COMMENT ON TABLE posts IS '帖子表';
-COMMENT ON COLUMN posts.author_id IS '作者ID';
-COMMENT ON COLUMN posts.parent_post_id IS '父帖子ID（回答帖子关联到问题帖子，问题帖子为NULL）';
-COMMENT ON COLUMN posts.title IS '标题';
-COMMENT ON COLUMN posts.content IS '正文内容（Markdown）';
-COMMENT ON COLUMN posts.summary IS '摘要（自动提取）';
-COMMENT ON COLUMN posts.category IS '分区（按国家/阶段/类型）';
-COMMENT ON COLUMN posts.country_code IS '关联国家';
-COMMENT ON COLUMN posts.cover_image IS '封面图';
-COMMENT ON COLUMN posts.media_urls IS '图片/视频列表 ["url1","url2"]';
-COMMENT ON COLUMN posts.view_count IS '浏览量';
-COMMENT ON COLUMN posts.like_count IS '点赞数';
-COMMENT ON COLUMN posts.comment_count IS '评论数';
-COMMENT ON COLUMN posts.collect_count IS '收藏数';
-COMMENT ON COLUMN posts.share_count IS '分享数';
-COMMENT ON COLUMN posts.answer_count IS '回答数（仅问题帖子有效）';
-COMMENT ON COLUMN posts.is_featured IS '是否精选';
-COMMENT ON COLUMN posts.is_pinned IS '是否置顶';
-COMMENT ON COLUMN posts.is_hot IS '是否热门';
-COMMENT ON COLUMN posts.allow_comment IS '允许评论';
-COMMENT ON COLUMN posts.slug IS 'URL友好标识';
-COMMENT ON COLUMN posts.published_at IS '发布时间';
-COMMENT ON COLUMN posts.deleted IS '逻辑删除标记';
-COMMENT ON COLUMN posts.version_id IS '乐观锁版本号';
+comment on column posts.title is '标题';
 
-CREATE TRIGGER update_posts_updated_at BEFORE UPDATE ON posts
-FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+comment on column posts.content is '正文内容（Markdown）';
+
+comment on column posts.summary is '摘要（自动提取）';
+
+comment on column posts.content_type is '内容类型: TREND(日常生活动态), QUESTION(提问题), ANSWER(写答案), GUIDE(写攻略)';
+
+comment on column posts.category is '分类';
+
+comment on column posts.cover_image is '封面图';
+
+comment on column posts.media_urls is '图片/视频列表 ["url1","url2"]';
+
+comment on column posts.view_count is '浏览量';
+
+comment on column posts.like_count is '点赞数';
+
+comment on column posts.comment_count is '评论数';
+
+comment on column posts.collect_count is '收藏数';
+
+comment on column posts.share_count is '分享数';
+
+comment on column posts.is_featured is '是否精选';
+
+comment on column posts.is_pinned is '是否置顶';
+
+comment on column posts.is_hot is '是否热门';
+
+comment on column posts.allow_comment is '允许评论';
+
+comment on column posts.slug is 'URL友好标识';
+
+comment on column posts.published_at is '发布时间';
+
+comment on column posts.deleted is '逻辑删除标记';
+
+comment on column posts.version_id is '乐观锁版本号';
+
+comment on column posts.parent_post_id is '父帖子ID（回答帖子关联到问题帖子，问题帖子为NULL）';
+
+comment on column posts.answer_count is '回答数（仅问题帖子有效）';
+
+alter table posts
+    owner to root;
+
+create index idx_posts_author_id
+    on posts (author_id);
+
+create index idx_posts_category
+    on posts (category);
+
+create index idx_posts_content_type
+    on posts (content_type);
+
+create index idx_posts_created_at
+    on posts (created_at desc);
+
+create index idx_posts_deleted
+    on posts (deleted);
+
+create index idx_posts_hot_featured
+    on posts (is_hot, is_featured);
+
+create index idx_posts_status
+    on posts (status);
+
+create index idx_posts_fulltext
+    on posts using gin (to_tsvector('english'::regconfig, (title::text || ' '::text) || content));
+
+create index idx_posts_parent_post_id
+    on posts (parent_post_id);
+
+create trigger update_posts_updated_at
+    before update
+    on posts
+    for each row
+execute procedure update_updated_at_column();
+
+
 
 -- ============================================
 -- 16. 评论表

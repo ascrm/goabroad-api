@@ -3,6 +3,7 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/docs/database/database_ddl.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/docs/database/migrations/001_add_parent_post_id_to_posts.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/docs/database/migrations/001_update_posts_content_type_constraint.sql" dialect="PostgreSQL" />
     <file url="PROJECT" dialect="PostgreSQL" />
   </component>
 </project>
